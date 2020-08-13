@@ -1,0 +1,168 @@
+package gobaker
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"path"
+	"strconv"
+	"strings"
+)
+
+// Mesh describes a 3D object
+type Mesh struct {
+	Triangles []Triangle
+	Materials []Material
+}
+
+// ReadPLY return Mesh object read from the PLY file, based on filename
+func ReadPLY(filename string) error {
+	return nil
+}
+
+// ReadOBJ return Mesh object read from the OBJ file, based on filename
+// It needs a Material slice in order to add
+// material to each triangle in the mesh
+func (m *Mesh) ReadOBJ(filename string, readMaterials bool) error {
+	inFile, _ := os.Open(filename + ".obj")
+	defer inFile.Close()
+
+	scanner := bufio.NewScanner(inFile)
+	scanner.Split(bufio.ScanLines)
+
+	vertices := make([]Vector, 0)
+	normals := make([]Vector, 0)
+	textures := make([]Vector, 0)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Fields(line)
+		if len(fields) < 2 {
+			continue
+		}
+		key := fields[0]
+		args := fields[1:]
+
+		switch key {
+		case "v":
+			v, err := ParseVector(strings.Join(args, ","))
+			if err != nil {
+				return fmt.Errorf(
+					"string %v cannot be converted to float64, %v",
+					args,
+					err,
+				)
+			}
+			vertices = append(vertices, v)
+		case "vn":
+			vn, err := ParseVector(strings.Join(args, ","))
+			if err != nil {
+				return fmt.Errorf(
+					"string %v cannot be converted to float64, %v",
+					args,
+					err,
+				)
+			}
+			// Set negative normals to positive
+			normals = append(normals, vn.Abs())
+		case "vt":
+			vt, err := ParseVector(args[0] + "," + args[1] + ",1")
+			if err != nil {
+				return fmt.Errorf(
+					"string %v cannot be converted to float64, %v",
+					args,
+					err,
+				)
+			}
+			textures = append(textures, vt)
+		case "usemtl":
+			if !readMaterials {
+				break
+			}
+			matName := strings.TrimPrefix(args[0], "MI_")
+			matName = path.Join(strings.Split(filename, "/")[0], "T_"+matName)
+			mat := Material{
+				LoadTexture(matName + "_diff.png"),
+				LoadTexture(matName + "_nrm.png"),
+			}
+			m.Materials = append(m.Materials, mat)
+		case "f":
+			size := len(args)
+			points := make([]Vertex, 3)
+
+			for i := 0; i < size; i++ {
+				f := strings.Split(args[i], "/")
+				var v Vector
+				var n Vector
+				var t Vector
+				if len(fields) > 0 {
+					vReadIndes, err := index(f[0], len(vertices))
+					if err != nil {
+						return err
+					}
+					v = vertices[vReadIndes]
+
+					tReadIndes, err := index(f[1], len(textures))
+					if err != nil {
+						return err
+
+					}
+					t = textures[tReadIndes]
+
+					nReadIndes, err := index(f[2], len(normals))
+					if err != nil {
+						return err
+
+					}
+					n = normals[nReadIndes]
+				}
+				points[i] = Vertex{v, t, n}
+			}
+			if !readMaterials {
+				m.addTriangle(points[0], points[1], points[2], nil)
+			} else {
+				m.addTriangle(points[0], points[1], points[2], &m.Materials[len(m.Materials)-1])
+			}
+		}
+	}
+	return nil
+}
+
+// String implements Stringer interface.
+// It displays information about each triangle in the mesh
+func (m Mesh) String() string {
+	var s string
+	s += "Mesh: \n"
+	for _, t := range m.Triangles {
+		s += fmt.Sprintf("%v\n", t)
+	}
+	return s
+}
+
+// addTriangle adds new triangle to a mesh
+func (m *Mesh) addTriangle(v0, v1, v2 Vertex, material *Material) {
+	triangle := Triangle{
+		V0:       v0,
+		V1:       v1,
+		V2:       v2,
+		Material: material,
+	}
+	m.Triangles = append(m.Triangles, triangle)
+}
+
+// index returns index value of face's vertex/texture/normal coordinates, based on string
+func index(s string, size int) (n int, err error) {
+	i, err := strconv.ParseInt(s, 0, 0)
+	if err != nil {
+		return 0, err
+	}
+	if n < 0 || n > size-1 {
+		return 0, fmt.Errorf("ReadIndes out of bounds: %v (size: %v, string: %v)", n, size, s)
+	}
+	n = size + int(i)
+	if i > 0 {
+		n = int(i - 1)
+	}
+
+	return n, nil
+}
