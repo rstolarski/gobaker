@@ -1,16 +1,17 @@
-package gobaker
+package main
 
 import (
 	"flag"
 
 	"github.com/pkg/profile"
+	"github.com/rtropisz/gobaker"
 )
 
-var bakedDiffuse *Texture
-var bakedNormal *Texture
+var bakedDiffuse *gobaker.Texture
+var bakedNormal *gobaker.Texture
 var offset float64
-var low Mesh
-var high Mesh
+var low gobaker.Mesh
+var high gobaker.Mesh
 var s int
 
 func main() {
@@ -26,7 +27,7 @@ func main() {
 	if *profiling {
 		defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
 	}
-	scene := NewScene(*size)
+	scene := gobaker.NewScene(*size)
 	scene.Lowpoly.ReadOBJ(*lowName, false)
 	scene.Highpoly.ReadOBJ(*highName, true)
 	scene.Bake()
