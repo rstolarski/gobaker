@@ -2,27 +2,30 @@ package main
 
 import (
 	"log"
+	"strings"
 	"time"
 
 	"github.com/rtropisz/gobaker"
 )
 
 const (
-	s = 1024
+	size     = 1024
+	lowName  = "./AppleTree_lowpoly.obj"
+	highName = "./AppleTree.obj"
 )
 
 func main() {
-	scene := gobaker.NewScene(s)
+	scene := gobaker.NewScene(size)
 	log.Printf("Starting")
 	start := time.Now()
+	scene.Lowpoly.ReadOBJ(lowName, false)
 	log.Printf("Reading lowpoly mesh.. %s", time.Since(start))
-	scene.Lowpoly.ReadOBJ("examples/AppleTree_lowpoly", false)
+	scene.Highpoly.ReadOBJ(highName, true)
 	log.Printf("Reading highpoly mesh.. %s", time.Since(start))
-	scene.Highpoly.ReadOBJ("examples/AppleTree", true)
-	log.Printf("Baking")
 	scene.Bake()
+	log.Printf("Baking...")
 	log.Printf("Finished baking took %s", time.Since(start))
-	scene.BakedDiffuse.SaveImage("outAppleTree_diff.png")
-	scene.BakedNormal.SaveImage("outAppleTree_norm.png")
+	scene.BakedDiffuse.SaveImage(strings.TrimSuffix(lowName, ".obj") + "_diff.png")
+	scene.BakedNormal.SaveImage(strings.TrimSuffix(lowName, ".obj") + "_norm.png")
 	log.Printf("Finished saving images took %s", time.Since(start))
 }
