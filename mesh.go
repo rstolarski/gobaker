@@ -15,16 +15,16 @@ type Mesh struct {
 	Materials []Material
 }
 
-// ReadPLY return Mesh object read from the PLY file, based on filename
-func ReadPLY(filename string) error {
+// ReadPLY return Mesh object read from the PLY file, based on pathToFile
+func ReadPLY(pathToFile string) error {
 	return nil
 }
 
-// ReadOBJ return Mesh object read from the OBJ file, based on filename
+// ReadOBJ return Mesh object read from the OBJ file, based on pathToFile
 // It needs a Material slice in order to add
 // material to each triangle in the mesh
-func (m *Mesh) ReadOBJ(filename string, readMaterials bool) error {
-	inFile, _ := os.Open(filename + ".obj")
+func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
+	inFile, _ := os.Open(pathToFile)
 	defer inFile.Close()
 
 	scanner := bufio.NewScanner(inFile)
@@ -79,8 +79,15 @@ func (m *Mesh) ReadOBJ(filename string, readMaterials bool) error {
 			if !readMaterials {
 				break
 			}
+			// Get material name without prefix
 			matName := strings.TrimPrefix(args[0], "MI_")
-			matName = path.Join(strings.Split(filename, "/")[0], "T_"+matName)
+			f := toSlash(pathToFile)      // Convert pathToFile to proper slashes
+			fSep := strings.Split(f, "/") // Split pathToFile to chunks
+			fSep = fSep[:len(fSep)-1]     // Delete file name from slice
+
+			f = strings.Join(fSep, "/")          // Join remaining element into path
+			matName = path.Join(f, "T_"+matName) // Add directory path to material name with prefix 'T_'
+
 			mat := Material{
 				LoadTexture(matName + "_diff.png"),
 				LoadTexture(matName + "_nrm.png"),
@@ -126,6 +133,18 @@ func (m *Mesh) ReadOBJ(filename string, readMaterials bool) error {
 		}
 	}
 	return nil
+}
+
+func toSlash(pathToFile string) string {
+	Separator := os.PathSeparator
+	if Separator == '/' {
+
+		return pathToFile
+
+	}
+
+	return strings.ReplaceAll(pathToFile, string(Separator), "/")
+
 }
 
 // String implements Stringer interface.
