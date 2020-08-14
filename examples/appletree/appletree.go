@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	size     = 1024
-	lowName  = "./AppleTree_lowpoly.obj"
-	highName = "./AppleTree.obj"
+	size        = 1024
+	lowName     = "./AppleTree_lowpoly.obj"
+	highName    = "./AppleTree.obj"
+	highPlyName = "./AppleTree.ply"
 )
 
 func main() {
@@ -21,6 +22,8 @@ func main() {
 	scene.Lowpoly.ReadOBJ(lowName, false)
 	log.Printf("Reading lowpoly mesh.. %s", time.Since(start))
 	scene.Highpoly.ReadOBJ(highName, true)
+	scene.Highpoly.ReadPLY(highPlyName)
+
 	log.Printf("Reading highpoly mesh.. %s", time.Since(start))
 	scene.Bake()
 	log.Printf("Baking...")

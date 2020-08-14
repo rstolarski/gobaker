@@ -15,8 +15,59 @@ type Mesh struct {
 	Materials []Material
 }
 
-// ReadPLY return Mesh object read from the PLY file, based on pathToFile
-func ReadPLY(pathToFile string) error {
+// ReadPLY adds to Mesh object vertex color values read from the PLY file, based on pathToFile
+func (m *Mesh) ReadPLY(pathToFile string) error {
+	inFile, _ := os.Open(pathToFile)
+	defer inFile.Close()
+
+	scanner := bufio.NewScanner(inFile)
+	scanner.Split(bufio.ScanLines)
+
+	read := false
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Fields(line)
+
+		if fields[0] == "end_header" {
+			read = true
+		}
+		if read == false || len(fields) < 5 { // use only lines with vertex definition
+			continue
+		}
+
+		// find vertices based on vertex position
+		vPos, err := ParseVector(fields[0], fields[2], fields[1])
+		if err != nil {
+			return fmt.Errorf(
+				"string cannot be converted to float64, %v",
+				err,
+			)
+		}
+		vAlpha, err := strconv.ParseFloat(fields[len(fields)-1], 64)
+		if err != nil {
+			return fmt.Errorf(
+				"string cannot be converted to float64, %v",
+				err,
+			)
+		}
+		vAlpha /= 255.0
+
+		for i := range m.Triangles {
+			if m.Triangles[i].V0.v.CompareVectors(vPos, 0.0000001) {
+				m.Triangles[i].V0.SetVertexAlpha(vAlpha)
+
+			}
+			if m.Triangles[i].V1.v.CompareVectors(vPos, 0.0000001) {
+				m.Triangles[i].V1.SetVertexAlpha(vAlpha)
+
+			}
+			if m.Triangles[i].V2.v.CompareVectors(vPos, 0.0000001) {
+				m.Triangles[i].V2.SetVertexAlpha(vAlpha)
+
+			}
+		}
+	}
 	return nil
 }
 
@@ -45,7 +96,7 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 
 		switch key {
 		case "v":
-			v, err := ParseVector(strings.Join(args, ","))
+			v, err := ParseVector(args[0], args[1], args[2])
 			if err != nil {
 				return fmt.Errorf(
 					"string %v cannot be converted to float64, %v",
@@ -55,7 +106,7 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 			}
 			vertices = append(vertices, v)
 		case "vn":
-			vn, err := ParseVector(strings.Join(args, ","))
+			vn, err := ParseVector(args[0], args[1], args[2])
 			if err != nil {
 				return fmt.Errorf(
 					"string %v cannot be converted to float64, %v",
@@ -64,9 +115,9 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 				)
 			}
 			// Set negative normals to positive
-			normals = append(normals, vn.Abs())
+			normals = append(normals, vn.Abs()) // ????
 		case "vt":
-			vt, err := ParseVector(args[0] + "," + args[1] + ",1")
+			vt, err := ParseVector(args[0], args[1], "1.0")
 			if err != nil {
 				return fmt.Errorf(
 					"string %v cannot be converted to float64, %v",
@@ -102,6 +153,7 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 				var v Vector
 				var n Vector
 				var t Vector
+
 				if len(fields) > 0 {
 					vReadIndes, err := index(f[0], len(vertices))
 					if err != nil {
@@ -123,7 +175,7 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 					}
 					n = normals[nReadIndes]
 				}
-				points[i] = Vertex{v, t, n}
+				points[i] = Vertex{v, t, n, 0}
 			}
 			if !readMaterials {
 				m.addTriangle(points[0], points[1], points[2], nil)

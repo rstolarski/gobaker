@@ -121,8 +121,8 @@ func Barycentric(a, b, c, l Vector) Vector {
 	return a.Mul(l.X).Add(b.Mul(l.Y)).Add(c.Mul(l.Z))
 }
 
-// ParseVector parses string values seperated with comma into a Vector.
-func ParseVector(s string) (v Vector, err error) {
+// ParseVectorFromString parses string values seperated with comma into a Vector.
+func ParseVectorFromString(s string) (v Vector, err error) {
 	xyz := strings.Split(s, ",")
 	if len(xyz) != 3 {
 		return v, fmt.Errorf(
@@ -142,8 +142,40 @@ func ParseVector(s string) (v Vector, err error) {
 	return v, err
 }
 
+// ParseVector parses 3 string values into a Vector.
+func ParseVector(stringX, stringY, stringZ string) (v Vector, err error) {
+
+	v.X, err = strconv.ParseFloat(stringX, 64)
+	if err != nil {
+		return v, err
+	}
+	v.Y, err = strconv.ParseFloat(stringY, 64)
+	if err != nil {
+		return v, err
+	}
+	v.Z, err = strconv.ParseFloat(stringZ, 64)
+	return v, err
+}
+
 // String implements Stringer interface.
 // It displays each Vector components value seperated with a comma.
 func (a Vector) String() string {
 	return fmt.Sprintf("%.5f, %.5f, %.5f", a.X, a.Y, a.Z)
+}
+
+// CompareVectors compares 2 vectors values with given tolerance
+func (a Vector) CompareVectors(b Vector, tolerance float64) bool {
+	diff := math.Abs(a.X - b.X)
+	if diff > tolerance {
+		return false
+	}
+	diff = math.Abs(a.Y - b.Y)
+	if diff > tolerance {
+		return false
+	}
+	diff = math.Abs(a.Y - b.Y)
+	if diff > tolerance {
+		return false
+	}
+	return true
 }
