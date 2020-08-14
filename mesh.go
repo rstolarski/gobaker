@@ -141,7 +141,7 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 
 			mat := Material{
 				LoadTexture(matName + "_diff.png"),
-				LoadTexture(matName + "_nrm.png"),
+				LoadTexture(matName + "_id.png"),
 			}
 			m.Materials = append(m.Materials, mat)
 		case "f":

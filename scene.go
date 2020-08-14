@@ -1,6 +1,7 @@
 package gobaker
 
 import (
+	"image/color"
 	"runtime"
 	"sort"
 	"sync"
@@ -13,16 +14,18 @@ type Scene struct {
 	Lowpoly      Mesh
 	Highpoly     Mesh
 	BakedDiffuse *Texture
-	BakedNormal  *Texture
-	OutputSize   int
+	//BakedNormal  *Texture
+	BakedID    *Texture
+	OutputSize int
 }
 
 // NewScene return a new Scene with output textures of a given size 's'
 func NewScene(s int) Scene {
 	return Scene{
 		BakedDiffuse: NewTexture(s),
-		BakedNormal:  NewTexture(s),
-		OutputSize:   s,
+		//BakedNormal:  NewTexture(s),
+		BakedID:    NewTexture(s),
+		OutputSize: s,
 	}
 }
 
@@ -35,6 +38,11 @@ func (s *Scene) Bake() {
 	// Offset used in UV coordinate calculations
 	offset := 1.0 / (2.0 * float64(s.OutputSize))
 
+	depth := make([][]float64, s.OutputSize)
+	for i := range depth {
+		depth[i] = make([]float64, s.OutputSize)
+	}
+
 	c := make(chan int, s.OutputSize)
 	var wg sync.WaitGroup
 	wg.Add(workers)
@@ -42,7 +50,7 @@ func (s *Scene) Bake() {
 		go func() {
 			for row := range c {
 				for col := 0; col < s.OutputSize; col++ {
-					s.processPixel(col, row, offset)
+					depth[col][row] = s.processPixel(col, row, offset)
 				}
 			}
 			wg.Done()
@@ -54,9 +62,37 @@ func (s *Scene) Bake() {
 	}
 	close(c)
 	wg.Wait()
+
+	// added alpha channel from depth array
+	maxDistance := -1.0
+
+	for x := range depth {
+		for y := range depth[x] {
+			if depth[x][y] <= 0 {
+				depth[x][y] = 0
+			} else {
+				if depth[x][y] > maxDistance {
+					maxDistance = depth[x][y]
+				}
+			}
+		}
+	}
+	for x := range depth {
+		for y := range depth[x] {
+			depth[x][y] /= maxDistance
+		}
+	}
+
+	for y := s.BakedID.Image.Bounds().Min.Y; y < s.BakedID.Image.Bounds().Max.Y; y++ {
+		for x := s.BakedID.Image.Bounds().Min.X; x < s.BakedID.Image.Bounds().Max.X; x++ {
+			c := color.NRGBAModel.Convert(s.BakedID.Image.At(x, y)).(color.NRGBA)
+			c.A = uint8(depth[x][y] * 255.0)
+			s.BakedID.Image.Set(x, y, c)
+		}
+	}
 }
 
-func (s *Scene) processPixel(x, y int, offset float64) {
+func (s *Scene) processPixel(x, y int, offset float64) float64 {
 	// Get uv coordinates for a given pixel
 	uv := Vector{
 		(float64(x) / float64(s.BakedDiffuse.h)) + offset,
@@ -110,7 +146,7 @@ func (s *Scene) processPixel(x, y int, offset float64) {
 
 	// Return early
 	if len(highpolyHit) == 0 {
-		return
+		return -1.0
 	}
 
 	// Sort each hit triangle by a hit distance from longest to shortest
@@ -132,7 +168,19 @@ func (s *Scene) processPixel(x, y int, offset float64) {
 		// Setting output diffuse texture color
 		s.BakedDiffuse.Image.SetNRGBA(x, y, highpolyHitDiffuseColor)
 
-		normalAthighpolyHit := Barycentric(t.V0.vn, t.V1.vn, t.V2.vn, t.Bar).Normalize()
+		// ID map baking
+		highpolyHitIDColor := t.Material.ID.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y)
+		// blue color multiply by va
+		blueColor := float64(highpolyHitIDColor.B) / 255.0
+		blueColor *= (t.V0.va*t.Bar.X + t.V1.va*t.Bar.Y + t.V2.va*t.Bar.Z)
+		highpolyHitIDColor.B = uint8(255.0 * blueColor)
+
+		s.BakedID.Image.SetNRGBA(x, y, highpolyHitIDColor)
+
+		return t.distance
+
+		//an attempt to rendering normals :P
+		//normalAthighpolyHit := Barycentric(t.V0.vn, t.V1.vn, t.V2.vn, t.Bar).Normalize()
 
 		// e0 := uvTriangle.V1.v.Sub(uvTriangle.V0.v)
 		// e1 := uvTriangle.V2.v.Sub(uvTriangle.V0.v)
@@ -182,8 +230,9 @@ func (s *Scene) processPixel(x, y int, offset float64) {
 		//highpolyHitNormalColor := t.Material.Normal.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y)
 		//normalAthighpolyHitColor := ColorToFloat(highpolyHitNormalColor.R, highpolyHitNormalColor.G, highpolyHitNormalColor.B)
 		//normalAthighpolyHit = normalAthighpolyHit.Add(normalAthighpolyHitColor).Normalize()
-		s.BakedNormal.Image.SetNRGBA(x, y, normalAthighpolyHit.FloatToColor())
+		//s.BakedNormal.Image.SetNRGBA(x, y, normalAthighpolyHit.FloatToColor())
 	}
+	return -1.0
 }
 
 // Checking if point with coordinates 'xp' and 'yp' is inside triangle
