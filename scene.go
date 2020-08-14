@@ -175,54 +175,54 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 		//an attempt to rendering normals :P
 		normalAthighpolyHit := Barycentric(t.V0.vn, t.V1.vn, t.V2.vn, t.Bar).Normalize()
 		//if t.distance < 0 {
-		//	normalAthighpolyHit = normalAthighpolyHit.Mul(-1.0)
+		normalAthighpolyHit = normalAthighpolyHit.Mul(-1.0)
 		//}
+		normalAthighpolyHit = normalAthighpolyHit.Add(One).Div(2.0)
+		s.BakedNormal.Image.SetNRGBA(x, y, normalAthighpolyHit.FloatToColor())
 
-		//s.BakedNormal.Image.SetNRGBA(x, y, normalAthighpolyHit.FloatToColor())
+		//  e0 := uvTriangle.V1.v.Sub(uvTriangle.V0.v)
+		//  e1 := uvTriangle.V2.v.Sub(uvTriangle.V0.v)
+		//  Normal := e0.Cross(e1)
 
-		a := t.V0.v
-		b := t.V1.v
-		c := t.V2.v
-		uv0 := t.V0.vt
-		uv1 := t.V1.vt
-		uv2 := t.V2.vt
+		//  P := uvTriangle.V1.v.Sub(uvTriangle.V0.v)
+		//  Q := uvTriangle.V2.v.Sub(uvTriangle.V0.v)
 
-		edge1 := b.Sub(a)
-		edge2 := c.Sub(a)
+		//  s1 := uvTriangle.V1.vt.X - uvTriangle.V0.vt.X
+		//  t1 := uvTriangle.V1.vt.Y - uvTriangle.V0.vt.Y
+		//  s2 := uvTriangle.V2.vt.X - uvTriangle.V0.vt.X
+		//  t2 := uvTriangle.V2.vt.Y - uvTriangle.V0.vt.Y
 
-		deltaU1 := uv1.X - uv0.X
-		deltaV1 := uv1.Y - uv0.Y
-		deltaU2 := uv2.X - uv0.X
-		deltaV2 := uv2.Y - uv0.Y
+		//  tmp := 1.0 / (s1*t2 - s2*t1)
 
-		f := 1.0 / (deltaU1*deltaV2 - deltaU2*deltaV1)
-		Normal := edge1.Cross(edge2)
-		Tangent := Vector{}
-		Bitangent := Vector{}
+		//  if math.Abs(s1*t2-s2*t1) <= 0.0001 {
+		//  	tmp = 1.0
+		//  }
 
-		Tangent.X = f * (deltaV2*edge1.X - deltaV1*edge2.X)
-		Tangent.Y = f * (deltaV2*edge1.Y - deltaV1*edge2.Y)
-		Tangent.Z = f * (deltaV2*edge1.Z - deltaV1*edge2.Z)
+		//  tX := t2*P.X - t1*Q.X
+		//  tY := t2*P.Y - t1*Q.Y
+		//  tZ := t2*P.Z - t1*Q.Z
+		//  Tangent := Vector{tX, tY, tZ}
+		//  Tangent = Tangent.Mul(tmp)
 
-		Normal = Normal.Normalize()
-		Tangent = Tangent.Normalize()
-		Bitangent = Bitangent.Normalize()
+		//  bX := s1*Q.X - s2*P.X
+		//  bY := s1*Q.Y - s2*P.Y
+		//  bZ := s1*Q.Z - s2*P.Z
+		//  Binormal := Vector{bX, bY, bZ}
+		//  Binormal = Binormal.Mul(tmp)
 
-		Tangent = Tangent.Sub(Normal.Mul(Tangent.Dot(Normal)))
-		Bitangent = Tangent.Cross(Normal)
-		mWorldToTangent := NewMatrix(Tangent, Bitangent, Normal)
-		newNormal := mWorldToTangent.MulDirection(normalAthighpolyHit).Normalize()
-		// v0 := mWorldToTangent.MulDirection(t.V0.vn)
-		// v1 := mWorldToTangent.MulDirection(t.V1.vn)
-		// v2 := mWorldToTangent.MulDirection(t.V2.vn)
-		// normalAthighpolyHit = Barycentric(v0, v1, v2, t.Bar).Normalize()
+		//  Tangent = Tangent.Normalize()
+		//  Binormal = Binormal.Normalize()
 
-		normalAthighpolyHit = newNormal.Add(One).Div(2.0)
+		//  mWorldToTangent := NewMatrix(Tangent, Binormal, Normal).Transpose()
+		//  v0 := mWorldToTangent.MulDirection(t.V0.vn)
+		//  v1 := mWorldToTangent.MulDirection(t.V1.vn)
+		//  v2 := mWorldToTangent.MulDirection(t.V2.vn)
+		//  normalAthighpolyHit := Barycentric(v0, v1, v2, t.Bar).Normalize()
 
 		//highpolyHitNormalColor := t.Material.Normal.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y)
 		//normalAthighpolyHitColor := ColorToFloat(highpolyHitNormalColor.R, highpolyHitNormalColor.G, highpolyHitNormalColor.B)
 		//normalAthighpolyHit = normalAthighpolyHit.Add(normalAthighpolyHitColor).Normalize()
-		s.BakedNormal.Image.SetNRGBA(x, y, normalAthighpolyHit.FloatToColor())
+		//s.BakedNormal.Image.SetNRGBA(x, y, normalAthighpolyHit.FloatToColor())
 
 		return t.distance
 	}
