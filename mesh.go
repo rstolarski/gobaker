@@ -130,8 +130,7 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 					err,
 				)
 			}
-			// Set negative normals to positive
-			normals = append(normals, vn.Abs()) // ????
+			normals = append(normals, vn.Normalize())
 		case "vt":
 			vt, err := ParseVector(args[0], args[1], "1.0")
 			if err != nil {
@@ -157,6 +156,7 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 
 			mat := Material{
 				LoadTexture(matName + "_diff.png"),
+				LoadTexture(matName + "_nrm.png"),
 				LoadTexture(matName + "_id.png"),
 			}
 			m.Materials = append(m.Materials, mat)

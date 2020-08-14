@@ -103,23 +103,6 @@ func (t *Triangle) Intersect(r *Ray) bool {
 
 	p.Intersect(r)
 	t.distance = r.Distance
-
-	uv0 := t.V0.vt
-	uv1 := t.V1.vt
-	uv2 := t.V2.vt
-
-	deltaPos1 := b.Sub(a)
-	deltaPos2 := c.Sub(a)
-
-	deltaUV1 := uv1.Sub(uv0)
-	deltaUV2 := uv2.Sub(uv0)
-
-	f := 1.0 / (deltaUV1.X*deltaUV2.Y - deltaUV1.Y*deltaUV2.X)
-	t.Tangent = (deltaPos1.Mul(deltaUV2.Y).Sub(deltaPos2.Mul(deltaUV1.Y))).Mul(f)
-	t.Bitangent = (deltaPos2.Mul(deltaUV1.X).Sub(deltaPos1.Mul(deltaUV2.X))).Mul(f)
-
-	t.Tangent = t.Tangent.Normalize()
-	t.Bitangent = t.Bitangent.Normalize()
 	return true
 }
 

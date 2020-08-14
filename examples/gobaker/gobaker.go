@@ -54,5 +54,6 @@ func main() {
 	//log.Printf("Finished baking: %s", time.Since(start))
 	scene.BakedDiffuse.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_diff.png")
 	scene.BakedID.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_id.png")
+	scene.BakedNormal.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_nrm.png")
 	log.Printf("Program finished in: %s", time.Since(start))
 }
