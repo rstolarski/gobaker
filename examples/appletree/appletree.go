@@ -9,26 +9,34 @@ import (
 )
 
 const (
-	size        = 1024
+	size        = 512
 	lowName     = "./AppleTree_lowpoly.obj"
 	highName    = "./AppleTree.obj"
-	highPlyName = "./AppleTree.ply"
+	highPlYName = "./AppleTree.ply"
 )
 
 func main() {
 	scene := gobaker.NewScene(size)
 	log.Printf("Starting")
 	start := time.Now()
-	scene.Lowpoly.ReadOBJ(lowName, false)
-	log.Printf("Readed lowpoly mesh.. %s", time.Since(start))
-	scene.Highpoly.ReadOBJ(highName, true)
-	scene.Highpoly.ReadPLY(highPlyName)
 
-	log.Printf("Readed highpoly mesh.. %s", time.Since(start))
+	err := scene.Lowpoly.ReadOBJ(lowName, false)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = scene.Highpoly.ReadOBJ(highName, true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = scene.Highpoly.ReadPLY(highPlYName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Started baking in %dx%d resolution", size, size)
 	scene.Bake()
-	log.Printf("Baking...")
-	log.Printf("Finished baking: %s", time.Since(start))
 	scene.BakedDiffuse.SaveImage(strings.TrimSuffix(lowName, ".obj") + "_diff.png")
 	scene.BakedID.SaveImage(strings.TrimSuffix(lowName, ".obj") + "_id.png")
-	log.Printf("Finished saving images: %s", time.Since(start))
+	log.Printf("Program finished in: %s", time.Since(start))
 }

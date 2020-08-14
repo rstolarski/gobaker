@@ -2,9 +2,11 @@ package gobaker
 
 import (
 	"image/color"
+	"log"
 	"runtime"
 	"sort"
 	"sync"
+	"time"
 )
 
 // Scene represents an object in which baking process is being handled
@@ -32,16 +34,17 @@ func NewScene(s int) Scene {
 // Bake processes each pixel of an output texture
 // it computes each texture in one process\
 func (s *Scene) Bake() {
+	defer duration(track("Baking took"))
 	// Get current number of CPU threads
 	workers := runtime.NumCPU()
 
 	// Offset used in UV coordinate calculations
 	offset := 1.0 / (2.0 * float64(s.OutputSize))
 
-	depth := make([][]float64, s.OutputSize)
-	for i := range depth {
-		depth[i] = make([]float64, s.OutputSize)
-	}
+	depth := make([]float64, s.OutputSize*s.OutputSize)
+	// for i := range depth {
+	// 	depth[i] = make([]float64, s.OutputSize)
+	// }
 
 	c := make(chan int, s.OutputSize)
 	var wg sync.WaitGroup
@@ -50,7 +53,7 @@ func (s *Scene) Bake() {
 		go func() {
 			for row := range c {
 				for col := 0; col < s.OutputSize; col++ {
-					depth[col][row] = s.processPixel(col, row, offset)
+					depth[col+s.OutputSize*row] = s.processPixel(col, row, offset)
 				}
 			}
 			wg.Done()
@@ -66,27 +69,22 @@ func (s *Scene) Bake() {
 	// added alpha channel from depth array
 	maxDistance := -1.0
 
-	for x := range depth {
-		for y := range depth[x] {
-			if depth[x][y] <= 0 {
-				depth[x][y] = 0
+	for row := 0; row < s.OutputSize; row++ {
+		for col := 0; col < s.OutputSize; col++ {
+			if depth[col+s.OutputSize*row] <= 0 {
+				depth[col+s.OutputSize*row] = 0
 			} else {
-				if depth[x][y] > maxDistance {
-					maxDistance = depth[x][y]
+				if depth[col+s.OutputSize*row] > maxDistance {
+					maxDistance = depth[col+s.OutputSize*row]
 				}
 			}
-		}
-	}
-	for x := range depth {
-		for y := range depth[x] {
-			depth[x][y] /= maxDistance
 		}
 	}
 
 	for y := s.BakedID.Image.Bounds().Min.Y; y < s.BakedID.Image.Bounds().Max.Y; y++ {
 		for x := s.BakedID.Image.Bounds().Min.X; x < s.BakedID.Image.Bounds().Max.X; x++ {
 			c := color.NRGBAModel.Convert(s.BakedID.Image.At(x, y)).(color.NRGBA)
-			c.A = uint8(depth[x][y] * 255.0)
+			c.A = uint8(depth[x+s.OutputSize*y] / maxDistance * 255.0)
 			s.BakedID.Image.Set(x, y, c)
 		}
 	}
@@ -252,4 +250,12 @@ func checkIfInside(x1, y1, x2, y2, x3, y3, xp, yp float64) bool {
 		return true
 	}
 	return false
+}
+
+func track(msg string) (string, time.Time) {
+	return msg, time.Now()
+}
+
+func duration(msg string, start time.Time) {
+	log.Printf("%v: %s\n", msg, time.Since(start))
 }

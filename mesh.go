@@ -3,6 +3,7 @@ package gobaker
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"strconv"
@@ -17,8 +18,16 @@ type Mesh struct {
 
 // ReadPLY adds to Mesh object vertex color values read from the PLY file, based on pathToFile
 func (m *Mesh) ReadPLY(pathToFile string) error {
-	inFile, _ := os.Open(pathToFile)
+	inFile, err := os.Open(pathToFile)
+	if err != nil {
+		log.Fatal(err)
+		return fmt.Errorf(
+			"Cannot open file with filename %v",
+			pathToFile,
+		)
+	}
 	defer inFile.Close()
+	defer duration(track("Reading " + pathToFile + " took"))
 
 	scanner := bufio.NewScanner(inFile)
 	scanner.Split(bufio.ScanLines)
@@ -75,8 +84,15 @@ func (m *Mesh) ReadPLY(pathToFile string) error {
 // It needs a Material slice in order to add
 // material to each triangle in the mesh
 func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
-	inFile, _ := os.Open(pathToFile)
-	defer inFile.Close()
+	inFile, err := os.Open(pathToFile)
+	if err != nil {
+		return fmt.Errorf(
+			"Cannot open file with filename %v",
+			pathToFile,
+		)
+	}
+
+	defer duration(track("Reading " + pathToFile + " took"))
 
 	scanner := bufio.NewScanner(inFile)
 	scanner.Split(bufio.ScanLines)
@@ -190,11 +206,9 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 func toSlash(pathToFile string) string {
 	Separator := os.PathSeparator
 	if Separator == '/' {
-
 		return pathToFile
 
 	}
-
 	return strings.ReplaceAll(pathToFile, string(Separator), "/")
 
 }
