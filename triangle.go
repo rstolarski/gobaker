@@ -34,9 +34,9 @@ type Triangle struct {
 // It displays each triangle Vertex, Texture and Normals Vectors
 func (t Triangle) String() string {
 	var s string
-	// s += fmt.Sprintf("Verticies: %.5f, %.5f, %.5f\n", t.V0.v, t.V1.v, t.V2.v)
-	// s += fmt.Sprintf("Texture: %.5f, %.5f, %.5f\n", t.V0.vt, t.V1.vt, t.V2.vt)
-	// s += fmt.Sprintf("Normals: %.5f, %.5f, %.5f\n", t.V0.vn, t.V1.vn, t.V2.vn)
+	s += fmt.Sprintf("Verticies: %.5f, %.5f, %.5f\n", t.V0.v, t.V1.v, t.V2.v)
+	s += fmt.Sprintf("Texture: %.5f, %.5f, %.5f\n", t.V0.vt, t.V1.vt, t.V2.vt)
+	s += fmt.Sprintf("Normals: %.5f, %.5f, %.5f\n", t.V0.vn, t.V1.vn, t.V2.vn)
 	s += fmt.Sprintf("Color: %.5f, %.5f, %.5f\n", t.V0.va, t.V1.va, t.V2.va)
 	return s
 }
