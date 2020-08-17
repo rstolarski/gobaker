@@ -1,7 +1,6 @@
 package gobaker
 
 import (
-	"image/color"
 	"log"
 	"runtime"
 	"sort"
@@ -85,7 +84,7 @@ func (s *Scene) Bake() {
 
 	for y := s.BakedID.Image.Bounds().Min.Y; y < s.BakedID.Image.Bounds().Max.Y; y++ {
 		for x := s.BakedID.Image.Bounds().Min.X; x < s.BakedID.Image.Bounds().Max.X; x++ {
-			sample := color.NRGBAModel.Convert(s.BakedID.Image.At(x, y)).(color.NRGBA)
+			sample := s.BakedID.Image.NRGBAAt(x, y)
 			sample.A = uint8(depth[x+s.OutputSize*y] / maxDistance * 255.0)
 			s.BakedID.Image.Set(x, y, sample)
 		}
@@ -198,7 +197,7 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 		s.BakedID.Image.SetNRGBA(x, y, highpolyHitIDColor)
 
 		//an attempt to rendering normals :P
-		normalAthighpolyHit := Barycentric(t.V0.vn, t.V1.vn, t.V2.vn, t.Bar).Normalize()
+		//normalAthighpolyHit := Barycentric(t.V0.vn, t.V1.vn, t.V2.vn, t.Bar).Normalize()
 
 		// // Calculating TBN matrix
 		// v0 := t.V0
@@ -248,11 +247,11 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 		//if t.distance < 0 {
 		//normalAthighpolyHit = normalAthighpolyHit.Mul(-1.0)
 		//}
-		normalAthighpolyHit = normalAthighpolyHit.Add(One).Div(2.0)
+		//normalAthighpolyHit = normalAthighpolyHit.Add(One).Div(2.0)
 
 		// Saving pixels to images
-		s.BakedObjectNormal.Image.SetNRGBA(x, y, normalAthighpolyHit.FloatToColor())
-		s.BakedNormal.Image.SetNRGBA(x, y, t.Material.Normal.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y))
+		//s.BakedObjectNormal.Image.SetNRGBA(x, y, normalAthighpolyHit.FloatToColor())
+		//s.BakedNormal.Image.SetNRGBA(x, y, t.Material.Normal.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y))
 		return t.distance
 	}
 	return -1.0
