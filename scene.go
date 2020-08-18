@@ -111,7 +111,7 @@ func (s *Scene) Bake() {
 	// }
 	// close(k)
 	// wg.Wait()
-	bep.Alert("BAKER", "Baking is done", "cooper.png")
+	bep.Alert("BAKER", "Baking finished!", "cooper.png")
 }
 
 func (s *Scene) processPixel(x, y int, offset float64) float64 {
