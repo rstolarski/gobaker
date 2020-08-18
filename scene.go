@@ -7,6 +7,8 @@ import (
 	"sort"
 	"sync"
 	"time"
+
+	bep "github.com/gen2brain/beeep"
 )
 
 // Scene represents an object in which baking process is being handled
@@ -110,6 +112,7 @@ func (s *Scene) Bake() {
 	// }
 	// close(k)
 	// wg.Wait()
+	bep.Alert("BAKER", "Baking is done", "cooper.png")
 }
 
 func (s *Scene) processPixel(x, y int, offset float64) float64 {
