@@ -140,12 +140,12 @@ type plane struct {
 
 func (p *plane) Intersect(r *Ray) bool {
 	denom := p.Normal.Dot(r.Direction)
-	nom := p.Position.Sub(r.Origin)
-	d := nom.Dot(p.Normal) / denom
-
 	if math.Abs(denom) < math.SmallestNonzeroFloat64 {
 		return false
 	}
+	
+	nom := p.Position.Sub(r.Origin)
+	d := nom.Dot(p.Normal) / denom
 
 	r.Distance = d
 	if d >= math.SmallestNonzeroFloat64 {
