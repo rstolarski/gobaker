@@ -26,7 +26,7 @@ type Triangle struct {
 	Normal     Vector
 	Bar        Vector // Baricentric coordinates from intersection with a ray
 	Material   *Material
-	distance   float64
+	Distance   float64
 	hitFront   bool
 }
 
@@ -47,63 +47,46 @@ func (t *Triangle) Intersect(r *Ray) bool {
 	b := t.V1.v
 	c := t.V2.v
 
-	t.Normal = (b.Sub(a)).Cross(c.Sub(a)).Normalize()
+	t.Normal = (b.Sub(a)).Cross(c.Sub(a))
 
-	p := plane{Position: a, Normal: t.Normal}
-	if !p.Intersect(r) {
+	if t.Normal.X > 1.0 || t.Normal.Y > 1.0 || t.Normal.Z > 1.0 {
+		t.Normal = t.Normal.Normalize()
+	}
+
+	den := t.Normal.Dot(r.Direction)
+	if math.Abs(den) < math.SmallestNonzeroFloat64 {
 		return false
 	}
 
-	// v0 := b.Sub(a)
-	// v1 := c.Sub(a)
-	// v2 := r.HitPosition().Sub(a)
+	nom := a.Sub(r.Origin)
+	d := nom.Dot(t.Normal) / den
 
-	// d00 := v0.Dot(v0)
-	// d01 := v0.Dot(v1)
-	// d11 := v1.Dot(v1)
-	// d20 := v2.Dot(v0)
-	// d21 := v2.Dot(v1)
+	r.Distance = d
+	if d >= math.SmallestNonzeroFloat64 {
+		v0 := b.Sub(a)
+		v1 := c.Sub(a)
+		v2 := r.HitPosition().Sub(a)
 
-	// denom := d00*d11 - d01*d01
-	// beta := (d11*d20 - d01*d21) / denom
-	// gamma := (d00*d21 - d01*d20) / denom
-	// a := v0
-	// b := v1
-	// c := v2
-	o := r.Origin
-	d := r.Direction
+		d00 := v0.Dot(v0)
+		d01 := v0.Dot(v1)
+		d11 := v1.Dot(v1)
+		d20 := v2.Dot(v0)
+		d21 := v2.Dot(v1)
 
-	M := [3][3](float64){
-		{a.X - b.X, a.X - c.X, d.X},
-		{a.Y - b.Y, a.Y - c.Y, d.Y},
-		{a.Z - b.Z, a.Z - c.Z, d.Z}}
+		denom := d00*d11 - d01*d01
+		beta := (d11*d20 - d01*d21) / denom
+		gamma := (d00*d21 - d01*d20) / denom
 
-	Mbeta := [3][3](float64){
-		{a.X - o.X, a.X - c.X, d.X},
-		{a.Y - o.Y, a.Y - c.Y, d.Y},
-		{a.Z - o.Z, a.Z - c.Z, d.Z}}
+		alpha := 1.0 - beta - gamma
 
-	Mgamma := [3][3](float64){
-		{a.X - b.X, a.X - o.X, d.X},
-		{a.Y - b.Y, a.Y - o.Y, d.Y},
-		{a.Z - b.Z, a.Z - o.Z, d.Z}}
-
-	detBeta := det(Mbeta)
-	detGamma := det(Mgamma)
-	detM := det(M)
-	beta := detBeta / detM
-	gamma := detGamma / detM
-
-	alpha := 1.0 - beta - gamma
-	t.Bar = Vector{alpha, beta, gamma}
-
-	if beta < 0.0 || gamma < 0.0 || alpha < 0.0 {
-		return false
+		if beta < 0.0 || gamma < 0.0 || alpha < 0.0 {
+			return false
+		}
+		t.Bar = Vector{alpha, beta, gamma}
+		t.Distance = r.Distance
+		return true
 	}
-
-	p.Intersect(r)
-	t.distance = r.Distance
-	return true
+	return false
 }
 
 // Barycentric return barycentric coorditnates based on UV position of a triangle.
@@ -124,32 +107,4 @@ func (t Triangle) Barycentric(u, v float64) Vector {
 
 	return Vector{d1, d2, d3}
 
-}
-
-func det(a [3][3]float64) float64 {
-	r1 := (a[0][0] * a[1][1] * a[2][2]) + (a[0][1] * a[1][2] * a[2][0]) + (a[0][2] * a[1][0] * a[2][1])
-	r2 := (a[0][2] * a[1][1] * a[2][0]) + (a[0][0] * a[1][2] * a[2][1]) + (a[0][1] * a[1][0] * a[2][2])
-
-	return (r1 - r2)
-}
-
-type plane struct {
-	Position Vector
-	Normal   Vector
-}
-
-func (p *plane) Intersect(r *Ray) bool {
-	denom := p.Normal.Dot(r.Direction)
-	if math.Abs(denom) < math.SmallestNonzeroFloat64 {
-		return false
-	}
-	
-	nom := p.Position.Sub(r.Origin)
-	d := nom.Dot(p.Normal) / denom
-
-	r.Distance = d
-	if d >= math.SmallestNonzeroFloat64 {
-		return true
-	}
-	return false
 }

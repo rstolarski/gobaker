@@ -62,7 +62,8 @@ func (m *Mesh) ReadPLY(pathToFile string) error {
 		}
 		vAlpha /= 255.0
 
-		for i := range m.Triangles {
+		// for i := range m.Triangles {
+		for i := 0; i < len(m.Triangles); i++ {
 			if m.Triangles[i].V0.v.CompareVectors(vPos, 0.0000001) {
 				m.Triangles[i].V0.SetVertexAlpha(vAlpha)
 
@@ -94,15 +95,25 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 
 	defer duration(track("Reading " + pathToFile + " took"))
 
-	scanner := bufio.NewScanner(inFile)
-	scanner.Split(bufio.ScanLines)
+	//scanner := bufio.NewScanner(inFile)
+	// scanner.Split(bufio.ScanLines)
 
 	vertices := make([]Vector, 0)
 	normals := make([]Vector, 0)
 	textures := make([]Vector, 0)
 
-	for scanner.Scan() {
-		line := scanner.Text()
+	reader := bufio.NewReader(inFile)
+	var line string
+
+	//for scanner.Scan() {
+
+	for {
+		//line := scanner.Text()
+		line, err = reader.ReadString('\n')
+
+		if err != nil {
+			break
+		}
 		fields := strings.Fields(line)
 		if len(fields) < 2 {
 			continue
@@ -218,8 +229,9 @@ func toSlash(pathToFile string) string {
 func (m Mesh) String() string {
 	var s string
 	s += "Mesh: \n"
-	for _, t := range m.Triangles {
-		s += fmt.Sprintf("%v\n", t)
+	//for _, t := range m.Triangles {
+	for i := 0; i < len(m.Triangles); i++ {
+		s += fmt.Sprintf("%v\n", m.Triangles[i])
 	}
 	return s
 }

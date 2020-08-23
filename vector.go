@@ -82,7 +82,7 @@ func (a Vector) Equals(b Vector) bool {
 
 // Normalize return Normalize current Vector.
 func (a Vector) Normalize() Vector {
-	l := a.Len()
+	l := math.Sqrt(a.Dot(a))
 	return Vector{a.X / l, a.Y / l, a.Z / l}
 }
 

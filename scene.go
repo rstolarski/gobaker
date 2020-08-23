@@ -92,25 +92,6 @@ func (s *Scene) Bake() {
 		}
 	}
 
-	// k := make(chan int, s.OutputSize)
-	// wg.Add(workers)
-	// for i := 0; i < workers; i++ {
-	// 	go func() {
-	// 		for x := range k {
-	// 			for y := 0; y < s.OutputSize; y++ {
-	// 				sample := color.NRGBAModel.Convert(s.BakedID.Image.At(x, y)).(color.NRGBA)
-	// 				sample.A = uint8(depth[x+s.OutputSize*y] / maxDistance * 255.0)
-	// 				s.BakedID.Image.Set(x, y, sample)
-	// 			}
-	// 		}
-	// 		wg.Done()
-	// 	}()
-	// }
-	// for x := 0; x < s.OutputSize; x++ {
-	// 	k <- x
-	// }
-	// close(k)
-	// wg.Wait()
 	bep.Alert("BAKER", "Baking finished!", "cooper.png")
 }
 
@@ -125,12 +106,19 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 	// Iterate through all low poly triangles and check if current
 	// uv coordinates are inside a given triangle
 	uvTriangle := Triangle{}
-	for _, t := range s.Lowpoly.Triangles {
-		if checkIfInside(t.V0.vt.X, t.V0.vt.Y, t.V1.vt.X, t.V1.vt.Y, t.V2.vt.X, t.V2.vt.Y,
+	//for _, t := range s.Lowpoly.Triangles {
+	for i := 0; i < len(s.Lowpoly.Triangles); i++ {
+		if checkIfInside(
+			s.Lowpoly.Triangles[i].V0.vt.X,
+			s.Lowpoly.Triangles[i].V0.vt.Y,
+			s.Lowpoly.Triangles[i].V1.vt.X,
+			s.Lowpoly.Triangles[i].V1.vt.Y,
+			s.Lowpoly.Triangles[i].V2.vt.X,
+			s.Lowpoly.Triangles[i].V2.vt.Y,
 			uv.X,
 			uv.Y,
 		) {
-			uvTriangle = t // If it intersects with a triangle, stop the loop
+			uvTriangle = s.Lowpoly.Triangles[i] // If it intersects with a triangle, stop the loop
 			break
 		}
 	}
@@ -152,14 +140,15 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 	highpolyHit := make([]Triangle, 0)
 
 	// Check interstions with each highpoly triangles
-	for _, t := range s.Highpoly.Triangles {
-		if t.Intersect(&rayFront) {
-			highpolyHit = append(highpolyHit, t)
+	//for _, t := range s.Highpoly.Triangles {
+	for i := 0; i < len(s.Highpoly.Triangles); i++ {
+		if s.Highpoly.Triangles[i].Intersect(&rayFront) {
+			highpolyHit = append(highpolyHit, s.Highpoly.Triangles[i])
 		}
-		if t.Intersect(&rayBack) {
-			t.hitFront = false
-			t.distance = -t.distance
-			highpolyHit = append(highpolyHit, t)
+		if s.Highpoly.Triangles[i].Intersect(&rayBack) {
+			s.Highpoly.Triangles[i].hitFront = false
+			s.Highpoly.Triangles[i].Distance = -s.Highpoly.Triangles[i].Distance
+			highpolyHit = append(highpolyHit, s.Highpoly.Triangles[i])
 		}
 	}
 
@@ -171,14 +160,15 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 	// Sort each hit triangle by a hit distance from longest to shortest
 	// This is to ensure that we get farthest triangles first and then the closest ones
 	sort.SliceStable(highpolyHit, func(i, j int) bool {
-		return highpolyHit[i].distance > highpolyHit[j].distance
+		return highpolyHit[i].Distance > highpolyHit[j].Distance
 	})
-	for _, t := range highpolyHit {
+	//for _, t := range highpolyHit {
+	for i := 0; i < len(highpolyHit); i++ {
 		// Get barycentric coordinates on a given highpoly triangle intesection
-		uvhighpolyHit := Barycentric(t.V0.vt, t.V1.vt, t.V2.vt, t.Bar)
+		uvhighpolyHit := Barycentric(highpolyHit[i].V0.vt, highpolyHit[i].V1.vt, highpolyHit[i].V2.vt, highpolyHit[i].Bar)
 
 		// Sample color from highpoly texture based on triangle's material
-		highpolyHitDiffuseColor := t.Material.Diffuse.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y)
+		highpolyHitDiffuseColor := highpolyHit[i].Material.Diffuse.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y)
 
 		//	Alpha checking
 		if highpolyHitDiffuseColor.A <= uint8(20) {
@@ -189,11 +179,11 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 		s.BakedDiffuse.Image.SetNRGBA(x, y, highpolyHitDiffuseColor)
 
 		// ID map baking
-		highpolyHitIDColor := t.Material.ID.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y)
+		highpolyHitIDColor := highpolyHit[i].Material.ID.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y)
 
 		// blue color multiply by va
 		blueColor := float64(highpolyHitIDColor.B) / 255.0
-		blueColor *= (t.V0.va*t.Bar.X + t.V1.va*t.Bar.Y + t.V2.va*t.Bar.Z)
+		blueColor *= (highpolyHit[i].V0.va*highpolyHit[i].Bar.X + highpolyHit[i].V1.va*highpolyHit[i].Bar.Y + highpolyHit[i].V2.va*highpolyHit[i].Bar.Z)
 		highpolyHitIDColor.B = uint8(255.0 * blueColor)
 
 		// Setting output ID texture color
@@ -255,7 +245,7 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 		// Saving pixels to images
 		//s.BakedObjectNormal.Image.SetNRGBA(x, y, normalAthighpolyHit.FloatToColor())
 		//s.BakedNormal.Image.SetNRGBA(x, y, t.Material.Normal.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y))
-		return t.distance
+		return highpolyHit[i].Distance
 	}
 	return -1.0
 }

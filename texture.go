@@ -37,7 +37,7 @@ func NewTexture(size int) *Texture {
 
 // SaveImage saves Texture's image with a given name 'n'
 func (t *Texture) SaveImage(n string) {
-	defer duration(track("Saving file" + n + "took"))
+	defer duration(track("Saving file " + n + "took"))
 	img := imaging.FlipV(t.Image)
 	outDiff, err := os.Create("./" + n)
 	if err != nil {

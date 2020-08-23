@@ -13,11 +13,13 @@ import (
 func main() {
 
 	var (
-		size        = flag.Int("s", 1024, "size of the output images in pixels")
-		lowName     = flag.String("l", "", "path to lowpoly mesh")
-		highName    = flag.String("h", "", "path to highpoly mesh")
-		highPLYName = flag.String("hp", "", "path to highpoly PLY mesh")
-		profiling   = flag.Bool("p", false, "turn on trace profiling")
+		size            = flag.Int("s", 1024, "size of the output images in pixels")
+		lowName         = flag.String("l", "", "path to lowpoly mesh")
+		highName        = flag.String("h", "", "path to highpoly mesh")
+		highPLYName     = flag.String("hp", "", "path to highpoly PLY mesh")
+		cpuProfiling    = flag.Bool("cpuP", false, "turn on cpu profiling")
+		memProfiling    = flag.Bool("memP", false, "turn on memory profiling")
+		tracecProfiling = flag.Bool("traceP", false, "turn on trace profiling")
 	)
 	flag.Parse()
 
@@ -26,7 +28,13 @@ func main() {
 	// }
 
 	//Profiling
-	if *profiling {
+	if *cpuProfiling {
+		defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	}
+	if *memProfiling {
+		defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
+	}
+	if *tracecProfiling {
 		defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
 	}
 	scene := gobaker.NewScene(*size)
