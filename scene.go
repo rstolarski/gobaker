@@ -45,9 +45,6 @@ func (s *Scene) Bake() {
 	offset := 1.0 / (2.0 * float64(s.OutputSize))
 
 	depth := make([]float64, s.OutputSize*s.OutputSize)
-	// for i := range depth {
-	// 	depth[i] = make([]float64, s.OutputSize)
-	// }
 
 	c := make(chan int, s.OutputSize)
 	var wg sync.WaitGroup
@@ -106,7 +103,7 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 	// Iterate through all low poly triangles and check if current
 	// uv coordinates are inside a given triangle
 	uvTriangle := Triangle{}
-	//for _, t := range s.Lowpoly.Triangles {
+
 	for i := 0; i < len(s.Lowpoly.Triangles); i++ {
 		if checkIfInside(
 			s.Lowpoly.Triangles[i].V0.vt.X,
@@ -129,6 +126,7 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 
 	// Origin is an origin point of a ray, that is from lowpoly mesh
 	origin := Barycentric(v0, v1, v2, uvTriangle.Barycentric(uv.X, uv.Y))
+
 	// Ray shoot the same direction as lowpoly triangle normal direction
 	direction := (v1.Sub(v0)).Cross(v2.Sub(v0))
 
@@ -140,7 +138,6 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 	highpolyHit := make([]Triangle, 0)
 
 	// Check interstions with each highpoly triangles
-	//for _, t := range s.Highpoly.Triangles {
 	for i := 0; i < len(s.Highpoly.Triangles); i++ {
 		if s.Highpoly.Triangles[i].Intersect(&rayFront) {
 			highpolyHit = append(highpolyHit, s.Highpoly.Triangles[i])
@@ -162,7 +159,7 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 	sort.SliceStable(highpolyHit, func(i, j int) bool {
 		return highpolyHit[i].Distance > highpolyHit[j].Distance
 	})
-	//for _, t := range highpolyHit {
+
 	for i := 0; i < len(highpolyHit); i++ {
 		// Get barycentric coordinates on a given highpoly triangle intesection
 		uvhighpolyHit := Barycentric(highpolyHit[i].V0.vt, highpolyHit[i].V1.vt, highpolyHit[i].V2.vt, highpolyHit[i].Bar)
