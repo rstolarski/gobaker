@@ -102,7 +102,7 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 
 	// Iterate through all low poly triangles and check if current
 	// uv coordinates are inside a given triangle
-	uvTriangle := Triangle{}
+	var uvTriangle *Triangle
 
 	for i := 0; i < len(s.Lowpoly.Triangles); i++ {
 		if checkIfInside(
@@ -115,9 +115,12 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 			uv.X,
 			uv.Y,
 		) {
-			uvTriangle = s.Lowpoly.Triangles[i] // If it intersects with a triangle, stop the loop
+			uvTriangle = &s.Lowpoly.Triangles[i] // If it intersects with a triangle, stop the loop
 			break
 		}
+	}
+	if uvTriangle == nil {
+		return -1.0
 	}
 
 	v0 := uvTriangle.V0.v
