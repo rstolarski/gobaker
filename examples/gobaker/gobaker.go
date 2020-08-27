@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/pkg/profile"
-	"github.com/rtropisz/gobaker"
+	"github.com/rtropisz/gobaker/gobaker"
 )
 
 func main() {
@@ -18,6 +18,7 @@ func main() {
 		lowName         = flag.String("l", "", "path to lowpoly mesh")
 		highName        = flag.String("h", "", "path to highpoly mesh")
 		highPLYName     = flag.String("hp", "", "path to highpoly PLY mesh")
+		output          = flag.String("o", "", "output directory")
 		cpuProfiling    = flag.Bool("cpuP", false, "turn on cpu profiling")
 		memProfiling    = flag.Bool("memP", false, "turn on memory profiling")
 		tracecProfiling = flag.Bool("traceP", false, "turn on trace profiling")
@@ -62,8 +63,8 @@ func main() {
 
 	log.Printf("Started baking in %dx%d resolution", *size, *size)
 	scene.Bake(workers)
-	scene.BakedDiffuse.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_diff.png")
-	scene.BakedID.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_id.png")
+	scene.BakedDiffuse.SaveImage(*output, strings.TrimSuffix(*lowName, ".obj")+"_diff.png")
+	scene.BakedID.SaveImage(*output, strings.TrimSuffix(*lowName, ".obj")+"_id.png")
 	// scene.BakedNormal.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_nrm.png")
 	// scene.BakedObjectNormal.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_obj_nrm.png")
 	log.Printf("Program finished in: %s", time.Since(start))

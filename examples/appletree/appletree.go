@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rtropisz/gobaker"
+	"github.com/rtropisz/gobaker/gobaker"
 )
 
 const (
@@ -14,6 +14,7 @@ const (
 	lowName     = "./AppleTree_lowpoly.obj"
 	highName    = "./AppleTree.obj"
 	highPlYName = "./AppleTree.ply"
+	output      = "./"
 )
 
 func main() {
@@ -37,7 +38,7 @@ func main() {
 	}
 	log.Printf("Started baking in %dx%d resolution", size, size)
 	scene.Bake(runtime.NumCPU())
-	scene.BakedDiffuse.SaveImage(strings.TrimSuffix(lowName, ".obj") + "_diff.png")
-	scene.BakedID.SaveImage(strings.TrimSuffix(lowName, ".obj") + "_id.png")
+	scene.BakedDiffuse.SaveImage(output, strings.TrimSuffix(lowName, ".obj")+"_diff.png")
+	scene.BakedID.SaveImage(output, strings.TrimSuffix(lowName, ".obj")+"_id.png")
 	log.Printf("Program finished in: %s", time.Since(start))
 }

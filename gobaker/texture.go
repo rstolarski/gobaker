@@ -8,6 +8,8 @@ import (
 	"image/png"
 	"math"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/disintegration/imaging"
 )
@@ -36,16 +38,20 @@ func NewTexture(size int) *Texture {
 }
 
 // SaveImage saves Texture's image with a given name 'n'
-func (t *Texture) SaveImage(n string) {
-	defer duration(track("Saving file " + n + "took"))
+func (t *Texture) SaveImage(dir, f string) {
+	defer duration(track("Saving file " + f + "took"))
+
+	a := strings.Split(toSlash(f), "/")
+	f = a[len(a)-1]
+
 	img := imaging.FlipV(t.Image)
-	outDiff, err := os.Create("./" + n)
+	outDiff, err := os.Create(filepath.Join(dir, f))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	switch n[len(n)-3:] {
+	switch f[len(f)-3:] {
 	case "png":
 		err = png.Encode(outDiff, img)
 		if err != nil {
