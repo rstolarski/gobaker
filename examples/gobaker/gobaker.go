@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"runtime"
 	"strings"
 	"time"
 
@@ -20,6 +21,7 @@ func main() {
 		cpuProfiling    = flag.Bool("cpuP", false, "turn on cpu profiling")
 		memProfiling    = flag.Bool("memP", false, "turn on memory profiling")
 		tracecProfiling = flag.Bool("traceP", false, "turn on trace profiling")
+		useHalfCPU      = flag.Bool("useHalfCPU", true, "use half of available CPU cores, if set to false all you have")
 	)
 	flag.Parse()
 
@@ -32,6 +34,11 @@ func main() {
 	}
 	if *tracecProfiling {
 		defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
+	}
+
+	workers := runtime.NumCPU()
+	if *useHalfCPU {
+		workers = runtime.NumCPU() / 2
 	}
 	scene := gobaker.NewScene(*size)
 
@@ -54,10 +61,10 @@ func main() {
 	}
 
 	log.Printf("Started baking in %dx%d resolution", *size, *size)
-	scene.Bake()
+	scene.Bake(workers)
 	scene.BakedDiffuse.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_diff.png")
 	scene.BakedID.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_id.png")
-	scene.BakedNormal.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_nrm.png")
-	scene.BakedObjectNormal.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_obj_nrm.png")
+	// scene.BakedNormal.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_nrm.png")
+	// scene.BakedObjectNormal.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_obj_nrm.png")
 	log.Printf("Program finished in: %s", time.Since(start))
 }

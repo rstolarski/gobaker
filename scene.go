@@ -2,7 +2,6 @@ package gobaker
 
 import (
 	"log"
-	"runtime"
 	"sort"
 	"sync"
 	"time"
@@ -36,10 +35,9 @@ func NewScene(s int) Scene {
 
 // Bake processes each pixel of an output texture
 // it computes each texture in one process\
-func (s *Scene) Bake() {
+func (s *Scene) Bake(workers int) {
 	defer duration(track("Baking took"))
 	// Get current number of CPU threads
-	workers := runtime.NumCPU()
 
 	// Offset used in UV coordinate calculations
 	offset := 1.0 / (2.0 * float64(s.OutputSize))

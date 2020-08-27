@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"runtime"
 	"strings"
 	"time"
 
@@ -35,7 +36,7 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("Started baking in %dx%d resolution", size, size)
-	scene.Bake()
+	scene.Bake(runtime.NumCPU())
 	scene.BakedDiffuse.SaveImage(strings.TrimSuffix(lowName, ".obj") + "_diff.png")
 	scene.BakedID.SaveImage(strings.TrimSuffix(lowName, ".obj") + "_id.png")
 	log.Printf("Program finished in: %s", time.Since(start))
