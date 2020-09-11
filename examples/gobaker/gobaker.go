@@ -26,6 +26,10 @@ func main() {
 	)
 	flag.Parse()
 
+	// if *lowName == "" || *highName == "" || *highPLYName == "" || {
+	// 	panic("You need to specify a paths to lowpoly, highpoly and ply files")
+	// }
+
 	//Profiling
 	if *cpuProfiling {
 		defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()

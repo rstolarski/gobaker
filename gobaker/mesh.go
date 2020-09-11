@@ -3,7 +3,6 @@ package gobaker
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"strconv"
@@ -18,12 +17,15 @@ type Mesh struct {
 
 // ReadPLY adds to Mesh object vertex color values read from the PLY file, based on pathToFile
 func (m *Mesh) ReadPLY(pathToFile string) error {
+	if pathToFile == "" {
+		return fmt.Errorf("Cannot open file. Path is not set")
+	}
+
 	inFile, err := os.Open(pathToFile)
 	if err != nil {
-		log.Fatal(err)
 		return fmt.Errorf(
-			"Cannot open file with filename %v",
-			pathToFile,
+			"Cannot open file. %v",
+			err,
 		)
 	}
 	defer inFile.Close()
@@ -84,11 +86,15 @@ func (m *Mesh) ReadPLY(pathToFile string) error {
 // It needs a Material slice in order to add
 // material to each triangle in the mesh
 func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
+	if pathToFile == "" {
+		return fmt.Errorf("Cannot open file. Path is not set")
+	}
+
 	inFile, err := os.Open(pathToFile)
 	if err != nil {
 		return fmt.Errorf(
-			"Cannot open file with filename %v",
-			pathToFile,
+			"Cannot open file. %v",
+			err,
 		)
 	}
 
@@ -158,10 +164,22 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 			f = strings.Join(fSep, "/")          // Join remaining element into path
 			matName = path.Join(f, "T_"+matName) // Add directory path to material name with prefix 'T_'
 
+			texDiffuse, err := LoadTexture(matName + "_diff.png")
+			if err != nil {
+				return nil
+			}
+			texNormal, err := LoadTexture(matName + "_diff.png")
+			if err != nil {
+				return nil
+			}
+			texID, err := LoadTexture(matName + "_diff.png")
+			if err != nil {
+				return nil
+			}
 			mat := Material{
-				LoadTexture(matName + "_diff.png"),
-				LoadTexture(matName + "_nrm.png"),
-				LoadTexture(matName + "_id.png"),
+				texDiffuse,
+				texNormal,
+				texID,
 			}
 			m.Materials = append(m.Materials, mat)
 		case "f":

@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/disintegration/imaging"
+	"github.com/ftrvxmtrx/tga"
 )
 
 // Texture defines image texture
@@ -64,30 +65,45 @@ func (t *Texture) SaveImage(dir, f string) {
 			fmt.Println(err)
 			os.Exit(1)
 		}
+	case "tga":
+		err = tga.Encode(outDiff, img)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	}
+
 }
 
 // LoadTexture loads texture object from png or jpg file with name 'n'
-func LoadTexture(n string) *Texture {
+func LoadTexture(pathToFile string) (*Texture, error) {
+	if pathToFile == "" {
+		return nil, fmt.Errorf("Cannot open file. Path is not set")
+	}
 	var img image.Image
 
 	// Read image from file that already exists
-	f, err := os.Open(n)
+	f, err := os.Open(pathToFile)
 	if err != nil {
-		return &Texture{nil, 0, 0}
+		return &Texture{nil, 0, 0}, nil
 	}
 	defer f.Close()
 
-	switch n[len(n)-3:] {
+	switch pathToFile[len(pathToFile)-3:] {
 	case "png":
 		img, err = png.Decode(f)
 		if err != nil {
-			return nil
+			return nil, err
 		}
 	case "jpg":
 		img, err = jpeg.Decode(f)
 		if err != nil {
-			return nil
+			return nil, err
+		}
+	case "tga":
+		img, err = tga.Decode(f)
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -100,10 +116,11 @@ func LoadTexture(n string) *Texture {
 	}
 
 	return &Texture{
-		imaging.FlipV(out),
-		out.Bounds().Max.X,
-		out.Bounds().Max.Y,
-	}
+			imaging.FlipV(out),
+			out.Bounds().Max.X,
+			out.Bounds().Max.Y,
+		},
+		nil
 }
 
 // SamplePixel return color of a pixel in u and v coordinates on image
