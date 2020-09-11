@@ -26,10 +26,6 @@ func main() {
 	)
 	flag.Parse()
 
-	// if *lowName == "" || *highName == "" || *highPLYName == "" || {
-	// 	panic("You need to specify a paths to lowpoly, highpoly and ply files")
-	// }
-
 	//Profiling
 	if *cpuProfiling {
 		defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
@@ -67,8 +63,16 @@ func main() {
 
 	log.Printf("Started baking in %dx%d resolution", *size, *size)
 	scene.Bake(workers)
-	scene.BakedDiffuse.SaveImage(*output, strings.TrimSuffix(*lowName, ".obj")+"_diff.png")
-	scene.BakedID.SaveImage(*output, strings.TrimSuffix(*lowName, ".obj")+"_id.png")
+
+	err = scene.BakedDiffuse.SaveImage(*output, strings.TrimSuffix(*lowName, ".obj")+"_diff.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = scene.BakedID.SaveImage(*output, strings.TrimSuffix(*lowName, ".obj")+"_id.png")
+	if err != nil {
+		log.Fatal(err)
+	}
 	// scene.BakedNormal.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_nrm.png")
 	// scene.BakedObjectNormal.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_obj_nrm.png")
 	log.Printf("Program finished in: %s", time.Since(start))

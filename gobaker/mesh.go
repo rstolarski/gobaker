@@ -164,23 +164,21 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 			f = strings.Join(fSep, "/")          // Join remaining element into path
 			matName = path.Join(f, "T_"+matName) // Add directory path to material name with prefix 'T_'
 
-			texDiffuse, err := LoadTexture(matName + "_diff.png")
+			//var texDiffuse, texNormal, texID Texture
+			var mat Material
+			mat.Diffuse, err = LoadTexture(matName + "_diff.png")
 			if err != nil {
 				return nil
 			}
-			texNormal, err := LoadTexture(matName + "_diff.png")
+			mat.Normal, err = LoadTexture(matName + "_nrm.png")
 			if err != nil {
 				return nil
 			}
-			texID, err := LoadTexture(matName + "_diff.png")
+			mat.ID, err = LoadTexture(matName + "_id.png")
 			if err != nil {
 				return nil
 			}
-			mat := Material{
-				texDiffuse,
-				texNormal,
-				texID,
-			}
+
 			m.Materials = append(m.Materials, mat)
 		case "f":
 			size := len(args)

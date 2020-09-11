@@ -39,7 +39,7 @@ func NewTexture(size int) *Texture {
 }
 
 // SaveImage saves Texture's image with a given name 'n'
-func (t *Texture) SaveImage(dir, f string) {
+func (t *Texture) SaveImage(dir, f string) error {
 	defer duration(track("Saving file " + f + "took"))
 
 	a := strings.Split(toSlash(f), "/")
@@ -62,17 +62,15 @@ func (t *Texture) SaveImage(dir, f string) {
 	case "jpg":
 		err = jpeg.Encode(outDiff, img, &jpeg.Options{Quality: 80})
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 	case "tga":
 		err = tga.Encode(outDiff, img)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 	}
-
+	return err
 }
 
 // LoadTexture loads texture object from png or jpg file with name 'n'
@@ -80,30 +78,30 @@ func LoadTexture(pathToFile string) (*Texture, error) {
 	if pathToFile == "" {
 		return nil, fmt.Errorf("Cannot open file. Path is not set")
 	}
-	var img image.Image
 
 	// Read image from file that already exists
 	f, err := os.Open(pathToFile)
 	if err != nil {
-		return &Texture{nil, 0, 0}, nil
+		return nil, fmt.Errorf("Cannot open file. %v", err)
 	}
 	defer f.Close()
 
+	var img image.Image
 	switch pathToFile[len(pathToFile)-3:] {
 	case "png":
 		img, err = png.Decode(f)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Cannot decode png file. %v", err)
 		}
 	case "jpg":
 		img, err = jpeg.Decode(f)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Cannot decode jpg file. %v", err)
 		}
 	case "tga":
 		img, err = tga.Decode(f)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Cannot decode tga file. %v", err)
 		}
 	}
 
@@ -116,11 +114,10 @@ func LoadTexture(pathToFile string) (*Texture, error) {
 	}
 
 	return &Texture{
-			imaging.FlipV(out),
-			out.Bounds().Max.X,
-			out.Bounds().Max.Y,
-		},
-		nil
+		imaging.FlipV(out),
+		out.Bounds().Max.X,
+		out.Bounds().Max.Y,
+	}, nil
 }
 
 // SamplePixel return color of a pixel in u and v coordinates on image

@@ -38,7 +38,15 @@ func main() {
 	}
 	log.Printf("Started baking in %dx%d resolution", size, size)
 	scene.Bake(runtime.NumCPU())
-	scene.BakedDiffuse.SaveImage(output, strings.TrimSuffix(lowName, ".obj")+"_diff.png")
-	scene.BakedID.SaveImage(output, strings.TrimSuffix(lowName, ".obj")+"_id.png")
+
+	err = scene.BakedDiffuse.SaveImage(output, strings.TrimSuffix(lowName, ".obj")+"_diff.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = scene.BakedID.SaveImage(output, strings.TrimSuffix(lowName, ".obj")+"_id.png")
+	if err != nil {
+		log.Fatal(err)
+	}
 	log.Printf("Program finished in: %s", time.Since(start))
 }
