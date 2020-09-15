@@ -166,17 +166,17 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 
 			//var texDiffuse, texNormal, texID Texture
 			var mat Material
-			mat.Diffuse, err = LoadTexture(matName + "_diff.png")
+			mat.Diffuse, err = LoadTexture(matName + "_diff")
 			if err != nil {
-				return nil
+				return err
 			}
-			mat.Normal, err = LoadTexture(matName + "_nrm.png")
+			// mat.Normal, err = LoadTexture(matName + "_nrm")
+			// if err != nil {
+			// 	return err
+			// }
+			mat.ID, err = LoadTexture(matName + "_id")
 			if err != nil {
-				return nil
-			}
-			mat.ID, err = LoadTexture(matName + "_id.png")
-			if err != nil {
-				return nil
+				return err
 			}
 
 			m.Materials = append(m.Materials, mat)
