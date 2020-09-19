@@ -50,14 +50,14 @@ namespace GoBaker_App
             OpenFileDialog ofd = new OpenFileDialog();
             if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                Program.PLYFile = ofd.FileName;
+                Program.HighPolyPLYFile = ofd.FileName;
             }
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
             Console.WriteLine("BAKING");
-            if (Program.LowPolyFile == "" || Program.HighPolyFile == "" || Program.PLYFile == "" || Program.Output == "" || Program.RenderSize == "")
+            if (Program.LowPolyFile == "" || Program.HighPolyFile == "" || Program.HighPolyPLYFile == "" || Program.Output == "" || Program.RenderSize == "")
             {
                 MessageBox.Show("You did not set some arguments. Double check again",    "Baker error");
             }
@@ -67,11 +67,14 @@ namespace GoBaker_App
                 p.StartInfo.FileName = @"gobaker.exe";
 
                 string arguments = "";
-                arguments += " -l " + Program.LowPolyFile;
-                arguments += " -h " + Program.HighPolyFile;
-                arguments += " -hp " + Program.PLYFile;
+                arguments += " -l \"" + Program.LowPolyFile + "\"";
+                arguments += " -h \"" + Program.HighPolyFile + "\"";
+                arguments += " -hp \"" + Program.HighPolyPLYFile + "\"";
                 arguments += " -s " + Program.RenderSize;
-                arguments += " -o " + Program.Output;
+                arguments += " -o \"" + Program.Output + "\"";
+                arguments += " -id=" + Program.ReadIDMap;
+
+                Console.WriteLine(arguments);
 
                 p.StartInfo.Arguments = arguments;
                 p.StartInfo.UseShellExecute = false;
@@ -123,6 +126,12 @@ namespace GoBaker_App
             }
 
 
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            Program.ReadIDMap = checkBox1.Checked;
+            Console.WriteLine(Program.ReadIDMap);
         }
     }
 }

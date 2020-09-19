@@ -3,6 +3,7 @@ package gobaker
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"strconv"
@@ -11,8 +12,9 @@ import (
 
 // Mesh describes a 3D object
 type Mesh struct {
+	Name      string
 	Triangles []Triangle
-	Materials []Material
+	Materials []*Material
 }
 
 // ReadPLY adds to Mesh object vertex color values read from the PLY file, based on pathToFile
@@ -85,7 +87,8 @@ func (m *Mesh) ReadPLY(pathToFile string) error {
 // ReadOBJ return Mesh object read from the OBJ file, based on pathToFile
 // It needs a Material slice in order to add
 // material to each triangle in the mesh
-func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
+func (m *Mesh) ReadOBJ(pathToFile string) error {
+	m.Name = pathToFile
 	if pathToFile == "" {
 		return fmt.Errorf("Cannot open file. Path is not set")
 	}
@@ -152,34 +155,9 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 			}
 			textures = append(textures, vt)
 		case "usemtl":
-			if !readMaterials {
-				break
-			}
-			// Get material name without prefix
-			matName := strings.TrimPrefix(args[0], "MI_")
-			f := toSlash(pathToFile)      // Convert pathToFile to proper slashes
-			fSep := strings.Split(f, "/") // Split pathToFile to chunks
-			fSep = fSep[:len(fSep)-1]     // Delete file name from slice
-
-			f = strings.Join(fSep, "/")          // Join remaining element into path
-			matName = path.Join(f, "T_"+matName) // Add directory path to material name with prefix 'T_'
-
-			//var texDiffuse, texNormal, texID Texture
 			var mat Material
-			mat.Diffuse, err = LoadTexture(matName + "_diff")
-			if err != nil {
-				return err
-			}
-			// mat.Normal, err = LoadTexture(matName + "_nrm")
-			// if err != nil {
-			// 	return err
-			// }
-			mat.ID, err = LoadTexture(matName + "_id")
-			if err != nil {
-				return err
-			}
-
-			m.Materials = append(m.Materials, mat)
+			mat.Name = args[0]
+			m.Materials = append(m.Materials, &mat)
 		case "f":
 			size := len(args)
 			points := make([]Vertex, 3)
@@ -200,23 +178,54 @@ func (m *Mesh) ReadOBJ(pathToFile string, readMaterials bool) error {
 					tReadIndes, err := index(f[1], len(textures))
 					if err != nil {
 						return err
-
 					}
 					t = textures[tReadIndes]
 
 					nReadIndes, err := index(f[2], len(normals))
 					if err != nil {
 						return err
-
 					}
 					n = normals[nReadIndes]
 				}
 				points[i] = Vertex{v, t, n, 0}
 			}
-			if !readMaterials {
+			if len(m.Materials) == 0 {
 				m.addTriangle(points[0], points[1], points[2], nil)
 			} else {
-				m.addTriangle(points[0], points[1], points[2], &m.Materials[len(m.Materials)-1])
+				m.addTriangle(points[0], points[1], points[2], m.Materials[len(m.Materials)-1])
+			}
+		}
+	}
+	return nil
+}
+
+// ReadTexturesToMaterials read textures data into each material
+// Texture names are based on material name
+func (m *Mesh) ReadTexturesToMaterials(readID bool) error {
+	for i := 0; i < len(m.Materials); i++ {
+		// Get material name without prefix
+		matName := strings.TrimPrefix(m.Materials[i].Name, "MI_")
+		f := toSlash(m.Name)          // Convert pathToFile to proper slashes
+		fSep := strings.Split(f, "/") // Split pathToFile to chunks
+		fSep = fSep[:len(fSep)-1]     // Delete file name from slice
+
+		f = strings.Join(fSep, "/")          // Join remaining element into path
+		matName = path.Join(f, "T_"+matName) // Add directory path to material name with prefix 'T_'
+
+		//var texDiffuse, texNormal, texID Texture
+		var err error
+		m.Materials[i].Diffuse, err = LoadTexture(matName + "_diff")
+		if err != nil {
+			log.Fatal(err)
+		}
+		// mat.Normal, err = LoadTexture(matName + "_nrm")
+		// if err != nil {
+		// 	return err
+		// }
+		if readID {
+			m.Materials[i].ID, err = LoadTexture(matName + "_id")
+			if err != nil {
+				log.Fatal(err)
 			}
 		}
 	}
@@ -230,7 +239,6 @@ func toSlash(pathToFile string) string {
 
 	}
 	return strings.ReplaceAll(pathToFile, string(Separator), "/")
-
 }
 
 // String implements Stringer interface.

@@ -13,24 +13,35 @@ import (
 // It cointais a lowpoly and highpoly meshes and output textures
 // with their final size
 type Scene struct {
-	Lowpoly           Mesh
-	Highpoly          Mesh
-	BakedDiffuse      *Texture
-	BakedNormal       *Texture
-	BakedObjectNormal *Texture
-	BakedID           *Texture
-	OutputSize        int
+	Lowpoly      Mesh
+	Highpoly     Mesh
+	BakedDiffuse *Texture
+	//BakedNormal       *Texture
+	//BakedObjectNormal *Texture
+	BakedID    *Texture
+	OutputSize int
+	ReadID     bool
 }
 
 // NewScene return a new Scene with output textures of a given size 's'
-func NewScene(s int) Scene {
+func NewScene(s int, readID bool) Scene {
 	return Scene{
-		BakedDiffuse:      NewTexture(s),
-		BakedNormal:       NewTexture(s),
-		BakedObjectNormal: NewTexture(s),
-		BakedID:           NewTexture(s),
-		OutputSize:        s,
+		BakedDiffuse: NewTexture(s),
+		//BakedNormal:       NewTexture(s),
+		//BakedObjectNormal: NewTexture(s),
+		BakedID:    NewTexture(s),
+		OutputSize: s,
+		ReadID:     readID,
 	}
+}
+
+// ReadTexturesForHighpoly read textures into highpoly model
+func (s *Scene) ReadTexturesForHighpoly() (err error) {
+	err = s.Highpoly.ReadTexturesToMaterials(s.ReadID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Bake processes each pixel of an output texture
@@ -64,26 +75,28 @@ func (s *Scene) Bake(workers int) {
 	close(c)
 	wg.Wait()
 
-	// added alpha channel from depth array
-	maxDistance := -1.0
+	if s.ReadID {
+		// added alpha channel from depth array
+		maxDistance := -1.0
 
-	for row := 0; row < s.OutputSize; row++ {
-		for col := 0; col < s.OutputSize; col++ {
-			if depth[col+s.OutputSize*row] <= 0 {
-				depth[col+s.OutputSize*row] = 0
-			} else {
-				if depth[col+s.OutputSize*row] > maxDistance {
-					maxDistance = depth[col+s.OutputSize*row]
+		for row := 0; row < s.OutputSize; row++ {
+			for col := 0; col < s.OutputSize; col++ {
+				if depth[col+s.OutputSize*row] <= 0 {
+					depth[col+s.OutputSize*row] = 0
+				} else {
+					if depth[col+s.OutputSize*row] > maxDistance {
+						maxDistance = depth[col+s.OutputSize*row]
+					}
 				}
 			}
 		}
-	}
 
-	for y := s.BakedID.Image.Bounds().Min.Y; y < s.BakedID.Image.Bounds().Max.Y; y++ {
-		for x := s.BakedID.Image.Bounds().Min.X; x < s.BakedID.Image.Bounds().Max.X; x++ {
-			sample := s.BakedID.Image.NRGBAAt(x, y)
-			sample.A = uint8(depth[x+s.OutputSize*y] / maxDistance * 255.0)
-			s.BakedID.Image.Set(x, y, sample)
+		for y := s.BakedID.Image.Bounds().Min.Y; y < s.BakedID.Image.Bounds().Max.Y; y++ {
+			for x := s.BakedID.Image.Bounds().Min.X; x < s.BakedID.Image.Bounds().Max.X; x++ {
+				sample := s.BakedID.Image.NRGBAAt(x, y)
+				sample.A = uint8(depth[x+s.OutputSize*y] / maxDistance * 255.0)
+				s.BakedID.Image.Set(x, y, sample)
+			}
 		}
 	}
 
@@ -177,15 +190,17 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 		s.BakedDiffuse.Image.SetNRGBA(x, y, highpolyHitDiffuseColor)
 
 		// ID map baking
-		highpolyHitIDColor := highpolyHit[i].Material.ID.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y)
+		if s.ReadID {
+			highpolyHitIDColor := highpolyHit[i].Material.ID.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y)
 
-		// blue color multiply by va
-		blueColor := float64(highpolyHitIDColor.B) / 255.0
-		blueColor *= (highpolyHit[i].V0.va*highpolyHit[i].Bar.X + highpolyHit[i].V1.va*highpolyHit[i].Bar.Y + highpolyHit[i].V2.va*highpolyHit[i].Bar.Z)
-		highpolyHitIDColor.B = uint8(255.0 * blueColor)
+			// blue color multiply by va
+			blueColor := float64(highpolyHitIDColor.B) / 255.0
+			blueColor *= (highpolyHit[i].V0.va*highpolyHit[i].Bar.X + highpolyHit[i].V1.va*highpolyHit[i].Bar.Y + highpolyHit[i].V2.va*highpolyHit[i].Bar.Z)
+			highpolyHitIDColor.B = uint8(255.0 * blueColor)
 
-		// Setting output ID texture color
-		s.BakedID.Image.SetNRGBA(x, y, highpolyHitIDColor)
+			// Setting output ID texture color
+			s.BakedID.Image.SetNRGBA(x, y, highpolyHitIDColor)
+		}
 
 		//an attempt to rendering normals :P
 		//normalAthighpolyHit := Barycentric(t.V0.vn, t.V1.vn, t.V2.vn, t.Bar).Normalize()

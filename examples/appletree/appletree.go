@@ -11,6 +11,7 @@ import (
 
 const (
 	size        = 512
+	readID      = true
 	lowName     = "./AppleTree_lowpoly.obj"
 	highName    = "./AppleTree.obj"
 	highPlYName = "./AppleTree.ply"
@@ -18,16 +19,16 @@ const (
 )
 
 func main() {
-	scene := gobaker.NewScene(size)
+	scene := gobaker.NewScene(size, readID)
 	log.Printf("Starting")
 	start := time.Now()
 
-	err := scene.Lowpoly.ReadOBJ(lowName, false)
+	err := scene.Lowpoly.ReadOBJ(lowName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = scene.Highpoly.ReadOBJ(highName, true)
+	err = scene.Highpoly.ReadOBJ(highName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,6 +38,12 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("Started baking in %dx%d resolution", size, size)
+
+	err = scene.ReadTexturesForHighpoly()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	scene.Bake(runtime.NumCPU())
 
 	err = scene.BakedDiffuse.SaveImage(output, strings.TrimSuffix(lowName, ".obj")+"_diff.png")

@@ -10,9 +10,10 @@ namespace GoBaker_App
     {
         public static string LowPolyFile = "";
         public static string HighPolyFile = "";
-        public static string PLYFile = "";
+        public static string HighPolyPLYFile = "";
         public static string RenderSize = "";
         public static string Output = "";
+        public static bool ReadIDMap;
         /// <summary>
         /// The main entry point for the application.
         /// </summary>

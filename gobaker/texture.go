@@ -25,9 +25,10 @@ type Texture struct {
 
 // Material of the mesh
 type Material struct {
+	Name    string
 	Diffuse *Texture
-	Normal  *Texture
-	ID      *Texture
+	//Normal  *Texture
+	ID *Texture
 }
 
 // NewTexture creates new texture with set size
