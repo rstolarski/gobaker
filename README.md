@@ -1,6 +1,4 @@
-# Gobaker
-
-Gobaker is a Go program thats intented to solve 
+# Gobaker 
 
 Standard 3D modeling programs (e.g. Blender or 3DS Max) can do baking process of highpoly mesh to a lowpoly model, but they lack alpha checking.
 
@@ -19,7 +17,7 @@ Repository contains two programs, one written in Go which represent backed for b
 ## Basic usage
 This application needs following files:
 * Lowpoly mesh in OBJ file format
-* Highpoly mesh in OBJ file format
+* Highpoly mesh in OBJ file format (with metarial names, su you need to export OBJ with MTL)
 * Highpoly mesh in PLY file format with saved vertex alpha color
 * Textures for lowpoly mesh:
     * Albedo/Diffuse with Opacity in alpha channel
@@ -36,17 +34,14 @@ Render size of the output image | _-s_
 Path to lowpoly mesh            | _-l_
 Path to highpoly mesh           | _-h_
 Path to PLY mesh                | _-hp_
-Rendered image output directory | _-o_
 
 ### Optional flags
 Description | Flag
 --- | :---:
-Turn on cpu profiling | _-cpuP_
-Turn on memory profiling | _-memP_
-Turn on trace profiling | _-traceP_
-Use half of available CPU cores. Otherwise use all use can | _-useHalfCPU_
+Rendered image output directory | _-o_
+Use half of available CPU cores. Otherwise use all available CPU cores | _-useHalfCPU_
 
 ## GUI application
-For GUI version of this app setting every flag from above (except optional flags) can be set using buttons. This version use all available CPU cores.
+For GUI version of this app setting every flag from above (except optional flags) can be set using buttons. This version usees all available CPU cores.
 
 ![GUI applcation](https://i.imgur.com/YzWjlf6.png)
