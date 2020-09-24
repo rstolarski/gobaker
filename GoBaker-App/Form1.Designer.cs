@@ -32,10 +32,14 @@
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.renderSizeBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.button5 = new System.Windows.Forms.Button();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.maxFrontTextBox = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.maxRearTextBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // button1
@@ -74,22 +78,22 @@
             // button4
             // 
             this.button4.Font = new System.Drawing.Font("Microsoft Sans Serif", 27.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.button4.Location = new System.Drawing.Point(297, 71);
+            this.button4.Location = new System.Drawing.Point(297, 165);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(160, 182);
+            this.button4.Size = new System.Drawing.Size(160, 88);
             this.button4.TabIndex = 3;
             this.button4.Text = "BAKE";
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
-            // textBox1
+            // renderSizeBox
             // 
-            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.textBox1.Location = new System.Drawing.Point(144, 26);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(109, 26);
-            this.textBox1.TabIndex = 4;
-            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            this.renderSizeBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.renderSizeBox.Location = new System.Drawing.Point(144, 26);
+            this.renderSizeBox.Name = "renderSizeBox";
+            this.renderSizeBox.Size = new System.Drawing.Size(109, 26);
+            this.renderSizeBox.TabIndex = 4;
+            this.renderSizeBox.TextChanged += new System.EventHandler(this.renderSizeBox_TextChanged);
             // 
             // label1
             // 
@@ -125,15 +129,58 @@
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.label2.Location = new System.Drawing.Point(269, 74);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(163, 20);
+            this.label2.TabIndex = 10;
+            this.label2.Text = "Max Frontal Distance:";
+            this.label2.Click += new System.EventHandler(this.label2_Click_1);
+            // 
+            // maxFrontTextBox
+            // 
+            this.maxFrontTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.maxFrontTextBox.Location = new System.Drawing.Point(447, 71);
+            this.maxFrontTextBox.Name = "maxFrontTextBox";
+            this.maxFrontTextBox.Size = new System.Drawing.Size(109, 26);
+            this.maxFrontTextBox.TabIndex = 9;
+            this.maxFrontTextBox.TextChanged += new System.EventHandler(this.maxFrontTextBox_TextChanged);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.label3.Location = new System.Drawing.Point(269, 106);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(148, 20);
+            this.label3.TabIndex = 12;
+            this.label3.Text = "Max Rear Distance:";
+            // 
+            // maxRearTextBox
+            // 
+            this.maxRearTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.maxRearTextBox.Location = new System.Drawing.Point(447, 103);
+            this.maxRearTextBox.Name = "maxRearTextBox";
+            this.maxRearTextBox.Size = new System.Drawing.Size(109, 26);
+            this.maxRearTextBox.TabIndex = 11;
+            this.maxRearTextBox.TextChanged += new System.EventHandler(this.maxRearTextBox_TextChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(512, 287);
+            this.ClientSize = new System.Drawing.Size(594, 287);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.maxRearTextBox);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.maxFrontTextBox);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.button5);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.renderSizeBox);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.button2);
@@ -152,10 +199,14 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox renderSizeBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox maxFrontTextBox;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox maxRearTextBox;
     }
 }
 

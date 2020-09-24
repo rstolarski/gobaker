@@ -12,12 +12,15 @@ import (
 )
 
 var (
-	size            = flag.Int("s", 1024, "size of the output images in pixels")
-	lowName         = flag.String("l", "", "path to lowpoly mesh")
-	highName        = flag.String("h", "", "path to highpoly mesh")
-	highPLYName     = flag.String("hp", "", "path to highpoly PLY mesh")
-	readID          = flag.Bool("id", true, "read ID map and use it in baking process")
-	output          = flag.String("o", "", "output directory")
+	size               = flag.Int("s", 1024, "size of the output images in pixels")
+	lowName            = flag.String("l", "", "path to lowpoly mesh")
+	highName           = flag.String("h", "", "path to highpoly mesh")
+	highPLYName        = flag.String("hp", "", "path to highpoly PLY mesh")
+	readID             = flag.Bool("id", true, "read ID map and use it in baking process")
+	maxRearDistance    = flag.Float64("rearD", 3.0, "max rear distance")
+	maxFrontalDistance = flag.Float64("frontD", 3.0, "max front distance")
+	output             = flag.String("o", "", "output directory")
+
 	cpuProfiling    = flag.Bool("cpuP", false, "turn on cpu profiling")
 	memProfiling    = flag.Bool("memP", false, "turn on memory profiling")
 	tracecProfiling = flag.Bool("traceP", false, "turn on trace profiling")
@@ -44,7 +47,7 @@ func main() {
 		workers = runtime.NumCPU() / 2
 	}
 
-	scene := gobaker.NewScene(*size, *readID)
+	scene := gobaker.NewScene(*size, *readID, *maxFrontalDistance, *maxRearDistance)
 
 	log.Printf("Starting")
 	start := time.Now()
@@ -59,9 +62,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = scene.Highpoly.ReadPLY(*highPLYName)
-	if err != nil {
-		log.Fatal(err)
+	if scene.ReadID {
+		err = scene.Highpoly.ReadPLY(*highPLYName)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	err = scene.ReadTexturesForHighpoly()

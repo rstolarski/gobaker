@@ -18,20 +18,24 @@ type Scene struct {
 	BakedDiffuse *Texture
 	//BakedNormal       *Texture
 	//BakedObjectNormal *Texture
-	BakedID    *Texture
-	OutputSize int
-	ReadID     bool
+	BakedID            *Texture
+	OutputSize         int
+	ReadID             bool
+	MaxFrontalDistance float64
+	MaxRearDistance    float64
 }
 
 // NewScene return a new Scene with output textures of a given size 's'
-func NewScene(s int, readID bool) Scene {
+func NewScene(s int, readID bool, MaxFrontalDistance, MaxRearDistance float64) Scene {
 	return Scene{
 		BakedDiffuse: NewTexture(s),
 		//BakedNormal:       NewTexture(s),
 		//BakedObjectNormal: NewTexture(s),
-		BakedID:    NewTexture(s),
-		OutputSize: s,
-		ReadID:     readID,
+		BakedID:            NewTexture(s),
+		OutputSize:         s,
+		ReadID:             readID,
+		MaxFrontalDistance: MaxFrontalDistance,
+		MaxRearDistance:    MaxRearDistance,
 	}
 }
 
@@ -113,7 +117,7 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 
 	// Iterate through all low poly triangles and check if current
 	// uv coordinates are inside a given triangle
-	var uvTriangle *Triangle
+	var lowpolyTriangle *Triangle
 
 	for i := 0; i < len(s.Lowpoly.Triangles); i++ {
 		if checkIfInside(
@@ -126,27 +130,34 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 			uv.X,
 			uv.Y,
 		) {
-			uvTriangle = &s.Lowpoly.Triangles[i] // If it intersects with a triangle, stop the loop
+			lowpolyTriangle = &s.Lowpoly.Triangles[i] // If it intersects with a triangle, stop the loop
 			break
 		}
 	}
-	if uvTriangle == nil {
+	if lowpolyTriangle == nil {
 		return -1.0
 	}
 
-	v0 := uvTriangle.V0.v
-	v1 := uvTriangle.V1.v
-	v2 := uvTriangle.V2.v
+	v0 := lowpolyTriangle.V0.v
+	v1 := lowpolyTriangle.V1.v
+	v2 := lowpolyTriangle.V2.v
+
+	n0 := lowpolyTriangle.V0.vn
+	n1 := lowpolyTriangle.V1.vn
+	n2 := lowpolyTriangle.V2.vn
+
+	b := lowpolyTriangle.Barycentric(uv.X, uv.Y)
 
 	// Origin is an origin point of a ray, that is from lowpoly mesh
-	origin := Barycentric(v0, v1, v2, uvTriangle.Barycentric(uv.X, uv.Y))
+	origin := Barycentric(v0, v1, v2, b)
 
 	// Ray shoot the same direction as lowpoly triangle normal direction
-	direction := (v1.Sub(v0)).Cross(v2.Sub(v0))
+	// direction := (v1.Sub(v0)).Cross(v2.Sub(v0))
+	direction := Barycentric(n0, n1, n2, b)
 
 	// Create new Ray for back and front shooting
-	rayFront := Ray{origin, direction.Normalize().Negate(), 0.0}
-	rayBack := Ray{origin, direction.Normalize(), 0.0}
+	rayFront := Ray{origin, direction.Normalize().Negate(), 0.0, s.MaxFrontalDistance, s.MaxRearDistance}
+	rayBack := Ray{origin, direction.Normalize(), 0.0, s.MaxFrontalDistance, s.MaxRearDistance}
 
 	// List of highpoly triangles that are going to be hit by Rays
 	highpolyHit := make([]Triangle, 0)
@@ -154,12 +165,17 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 	// Check interstions with each highpoly triangles
 	for i := 0; i < len(s.Highpoly.Triangles); i++ {
 		if s.Highpoly.Triangles[i].Intersect(&rayFront) {
-			highpolyHit = append(highpolyHit, s.Highpoly.Triangles[i])
+			if rayFront.Distance <= rayFront.MaxFrontalDistance {
+				highpolyHit = append(highpolyHit, s.Highpoly.Triangles[i])
+			}
 		}
 		if s.Highpoly.Triangles[i].Intersect(&rayBack) {
-			s.Highpoly.Triangles[i].hitFront = false
-			s.Highpoly.Triangles[i].Distance = -s.Highpoly.Triangles[i].Distance
-			highpolyHit = append(highpolyHit, s.Highpoly.Triangles[i])
+			if rayBack.Distance <= rayBack.MaxRearDistance {
+				s.Highpoly.Triangles[i].hitFront = false
+				s.Highpoly.Triangles[i].Distance = -s.Highpoly.Triangles[i].Distance
+				highpolyHit = append(highpolyHit, s.Highpoly.Triangles[i])
+			}
+
 		}
 	}
 

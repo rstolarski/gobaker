@@ -10,16 +10,18 @@ import (
 )
 
 const (
-	size        = 512
-	readID      = true
-	lowName     = "./AppleTree_lowpoly.obj"
-	highName    = "./AppleTree.obj"
-	highPlYName = "./AppleTree.ply"
-	output      = "./"
+	size               = 512
+	readID             = true
+	lowName            = "./AppleTree_lowpoly.obj"
+	highName           = "./AppleTree.obj"
+	highPlYName        = "./AppleTree.ply"
+	output             = "./"
+	maxRearDistance    = 0.0001
+	maxFrontalDistance = 0.0001
 )
 
 func main() {
-	scene := gobaker.NewScene(size, readID)
+	scene := gobaker.NewScene(size, readID, maxFrontalDistance, maxRearDistance)
 	log.Printf("Starting")
 	start := time.Now()
 

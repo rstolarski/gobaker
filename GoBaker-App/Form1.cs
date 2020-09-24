@@ -57,9 +57,35 @@ namespace GoBaker_App
         private void button4_Click(object sender, EventArgs e)
         {
             Console.WriteLine("BAKING");
-            if (Program.LowPolyFile == "" || Program.HighPolyFile == "" || Program.HighPolyPLYFile == "" || Program.Output == "" || Program.RenderSize == "")
+
+
+            if (Program.LowPolyFile == "")
             {
-                MessageBox.Show("You did not set some arguments. Double check again",    "Baker error");
+                MessageBox.Show("You did not set path to Lowpoly file. Double check again", "Baker error");
+            }
+            else if (Program.HighPolyFile == "")
+            {
+                MessageBox.Show("You did not set path to Highpoly file. Double check again", "Baker error");
+            }
+            else if (Program.Output == "")
+            {
+                MessageBox.Show("You did not set output path. Double check again", "Baker error");
+            }
+            else if (Program.RenderSize == "")
+            {
+                MessageBox.Show("You did not set render size. Double check again", "Baker error");
+            }
+            else if (Program.MaxFrontDistance == "")
+            {
+                MessageBox.Show("You did not set max frontal distance. Double check again", "Baker error");
+            }
+            else if (Program.MaxRearDistance == "")
+            {
+                MessageBox.Show("You did not set max rear distance Double check again", "Baker error");
+            }
+            else if (Program.ReadIDMap && Program.HighPolyPLYFile == "")
+            {
+                MessageBox.Show("You did not set path to PLY file. Double check again", "Baker error");
             }
             else
             {
@@ -71,6 +97,8 @@ namespace GoBaker_App
                 arguments += " -h \"" + Program.HighPolyFile + "\"";
                 arguments += " -hp \"" + Program.HighPolyPLYFile + "\"";
                 arguments += " -s " + Program.RenderSize;
+                arguments += " -frontD " + Program.MaxFrontDistance;
+                arguments += " -rearD " + Program.MaxRearDistance;
                 arguments += " -o \"" + Program.Output + "\"";
                 arguments += " -id=" + Program.ReadIDMap;
 
@@ -91,13 +119,13 @@ namespace GoBaker_App
         {
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        private void renderSizeBox_TextChanged(object sender, EventArgs e)
         {
-            Program.RenderSize = textBox1.Text;
-            Console.WriteLine(Program.RenderSize);
+            Program.RenderSize = renderSizeBox.Text;
+            Console.WriteLine("RenderSize" + Program.RenderSize);
         }
 
-        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        private void renderSizeBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
                 (e.KeyChar != '.'))
@@ -124,14 +152,59 @@ namespace GoBaker_App
             {
                 Program.Output = folderBrowserDialog1.SelectedPath;
             }
-
-
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             Program.ReadIDMap = checkBox1.Checked;
             Console.WriteLine(Program.ReadIDMap);
+        }
+
+        private void label2_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void maxFrontTextBox_TextChanged(object sender, EventArgs e)
+        {
+            Program.MaxFrontDistance = maxFrontTextBox.Text;
+            Console.WriteLine("MaxFrontDistance" + Program.MaxFrontDistance);
+        }
+
+        private void maxFrontTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
+                (e.KeyChar != '.'))
+            {
+                e.Handled = true;
+            }
+
+            // only allow five decimal point
+            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -5))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void maxRearTextBox_TextChanged(object sender, EventArgs e)
+        {
+            Program.MaxRearDistance = maxRearTextBox.Text;
+            Console.WriteLine("MaxRearDistance" + Program.MaxRearDistance);
+        }
+
+        private void maxRearTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
+                (e.KeyChar != '.'))
+            {
+                e.Handled = true;
+            }
+
+            // only allow five decimal point
+            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -5))
+            {
+                e.Handled = true;
+            }
         }
     }
 }
