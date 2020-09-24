@@ -38,6 +38,9 @@ Path to PLY mesh                | _-hp_
 ### Optional flags
 Description | Flag
 --- | :---:
+Use ID map (if false, you don't have to add PLY file path) | _-id_
+Max ray front distance | _-frontD_
+Max ray rear distance | _-rearD_
 Rendered image output directory | _-o_
 Use half of available CPU cores. Otherwise use all available CPU cores | _-useHalfCPU_
 
