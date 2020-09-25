@@ -7,7 +7,6 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
-	"log"
 	"math"
 	"os"
 	"path/filepath"
@@ -43,7 +42,7 @@ func NewTexture(size int) *Texture {
 
 // SaveImage saves Texture's image with a given name 'n'
 func (t *Texture) SaveImage(dir, f string) error {
-	defer duration(track("Saving file " + f + "took"))
+	defer duration(track("Saving file " + f + " took"))
 
 	a := strings.Split(toSlash(f), "/")
 	f = a[len(a)-1]
@@ -93,7 +92,7 @@ func LoadTexture(pathToFile string) (*Texture, error) {
 	var img *image.NRGBA
 
 	if _, err := os.Stat(fpath + ".png"); err == nil {
-		log.Println("Reading " + fpath + ".PNG")
+		defer duration(track("Reading " + fpath + ".PNG took"))
 		if img, err = decodeTexture(fpath, ".png", png.Decode); err != nil {
 			return nil, err
 		}
@@ -111,7 +110,7 @@ func LoadTexture(pathToFile string) (*Texture, error) {
 	// }
 
 	if _, err := os.Stat(fpath + ".jpg"); err == nil {
-		log.Println("Reading " + fpath + ".JPG")
+		defer duration(track("Reading " + fpath + ".JPG took"))
 		if img, err = decodeTexture(fpath, ".jpg", jpeg.Decode); err != nil {
 			return nil, err
 		}

@@ -202,6 +202,7 @@ func (m *Mesh) ReadOBJ(pathToFile string) error {
 // ReadTexturesToMaterials read textures data into each material
 // Texture names are based on material name
 func (m *Mesh) ReadTexturesToMaterials(readID bool) error {
+
 	for i := 0; i < len(m.Materials); i++ {
 		// Get material name without prefix
 		matName := strings.TrimPrefix(m.Materials[i].Name, "MI_")
