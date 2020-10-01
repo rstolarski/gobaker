@@ -11,9 +11,9 @@ namespace GoBaker_App
         public static string LowPolyFile = "";
         public static string HighPolyFile = "";
         public static string HighPolyPLYFile = "";
-        public static string RenderSize = "";
-        public static string MaxFrontDistance = "";
-        public static string MaxRearDistance = "";
+        public static string RenderSize = "512";
+        public static string MaxFrontDistance = "3.0";
+        public static string MaxRearDistance = "3.0";
         public static string Output = "";
         public static bool ReadIDMap;
         /// <summary>

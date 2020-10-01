@@ -93,9 +93,9 @@ namespace GoBaker_App
                 p.StartInfo.FileName = @"gobaker.exe";
 
                 string arguments = "";
-                arguments += " -l \"" + Program.LowPolyFile + "\"";
-                arguments += " -h \"" + Program.HighPolyFile + "\"";
-                arguments += " -hp \"" + Program.HighPolyPLYFile + "\"";
+                arguments += " -lp \"" + Program.LowPolyFile + "\"";
+                arguments += " -hp \"" + Program.HighPolyFile + "\"";
+                arguments += " -ply \"" + Program.HighPolyPLYFile + "\"";
                 arguments += " -s " + Program.RenderSize;
                 arguments += " -frontD " + Program.MaxFrontDistance;
                 arguments += " -rearD " + Program.MaxRearDistance;

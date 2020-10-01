@@ -5,8 +5,6 @@ import (
 	"sort"
 	"sync"
 	"time"
-
-	bep "github.com/gen2brain/beeep"
 )
 
 // Scene represents an object in which baking process is being handled
@@ -103,8 +101,6 @@ func (s *Scene) Bake(workers int) {
 			}
 		}
 	}
-
-	bep.Alert("BAKER", "Baking finished!", "cooper.png")
 }
 
 func (s *Scene) processPixel(x, y int, offset float64) float64 {
@@ -274,6 +270,7 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 		// Saving pixels to images
 		//s.BakedObjectNormal.Image.SetNRGBA(x, y, normalAthighpolyHit.FloatToColor())
 		//s.BakedNormal.Image.SetNRGBA(x, y, t.Material.Normal.SamplePixel(uvhighpolyHit.X, uvhighpolyHit.Y))
+
 		return highpolyHit[i].Distance
 	}
 	return -1.0

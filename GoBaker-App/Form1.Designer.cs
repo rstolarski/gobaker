@@ -93,6 +93,7 @@
             this.renderSizeBox.Name = "renderSizeBox";
             this.renderSizeBox.Size = new System.Drawing.Size(109, 26);
             this.renderSizeBox.TabIndex = 4;
+            this.renderSizeBox.Text = "512";
             this.renderSizeBox.TextChanged += new System.EventHandler(this.renderSizeBox_TextChanged);
             // 
             // label1
@@ -147,6 +148,7 @@
             this.maxFrontTextBox.Name = "maxFrontTextBox";
             this.maxFrontTextBox.Size = new System.Drawing.Size(109, 26);
             this.maxFrontTextBox.TabIndex = 9;
+            this.maxFrontTextBox.Text = "3.0";
             this.maxFrontTextBox.TextChanged += new System.EventHandler(this.maxFrontTextBox_TextChanged);
             // 
             // label3
@@ -166,6 +168,7 @@
             this.maxRearTextBox.Name = "maxRearTextBox";
             this.maxRearTextBox.Size = new System.Drawing.Size(109, 26);
             this.maxRearTextBox.TabIndex = 11;
+            this.maxRearTextBox.Text = "3.0";
             this.maxRearTextBox.TextChanged += new System.EventHandler(this.maxRearTextBox_TextChanged);
             // 
             // Form1

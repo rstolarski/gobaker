@@ -42,24 +42,32 @@ func NewTexture(size int) *Texture {
 
 // SaveImage saves Texture's image with a given name 'n'
 func (t *Texture) SaveImage(dir, f string) error {
-	defer duration(track("Saving file " + f + " took"))
-
 	a := strings.Split(toSlash(f), "/")
 	f = a[len(a)-1]
+	fpath := filepath.Join(dir, f)
+
+	var outDiff *os.File
+
+	outDiff, err := os.Create(fpath)
+	if err != nil {
+		return err
+	}
+
+	if dir == "" {
+		defer duration(track("Saving file .\\" + fpath + " took"))
+	} else {
+		defer duration(track("Saving file " + fpath + " took"))
+	}
+
+	defer outDiff.Close()
 
 	img := imaging.FlipV(t.Image)
-	outDiff, err := os.Create(filepath.Join(dir, f))
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 
 	switch f[len(f)-3:] {
 	case "png":
 		err = png.Encode(outDiff, img)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return err
 		}
 		break
 	case "jpg":

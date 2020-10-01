@@ -12,13 +12,15 @@ import (
 
 	"github.com/pkg/profile"
 	"github.com/rtropisz/gobaker/gobaker"
+
+	bep "github.com/gen2brain/beeep"
 )
 
 var (
 	size               = flag.Int("s", 1024, "size of the output images in pixels")
-	lowName            = flag.String("l", "", "path to lowpoly mesh")
-	highName           = flag.String("h", "", "path to highpoly mesh")
-	highPLYName        = flag.String("hp", "", "path to highpoly PLY mesh")
+	lowName            = flag.String("lp", "", "path to lowpoly mesh")
+	highName           = flag.String("hp", "", "path to highpoly mesh")
+	highPLYName        = flag.String("ply", "", "path to highpoly PLY mesh")
 	readID             = flag.Bool("id", true, "read ID map and use it in baking process")
 	maxRearDistance    = flag.Float64("rearD", 3.0, "max rear distance")
 	maxFrontalDistance = flag.Float64("frontD", 3.0, "max front distance")
@@ -96,5 +98,8 @@ func main() {
 	// scene.BakedObjectNormal.SaveImage(strings.TrimSuffix(*lowName, ".obj") + "_obj_nrm.png")
 	log.Printf("Program finished in: %s", time.Since(start))
 	fmt.Print("Press 'Enter' to continue...")
+
+	bep.Alert("BAKER", "Baking finished!", "cooper.png")
+
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 }

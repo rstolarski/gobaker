@@ -31,9 +31,9 @@ Keyboard controls are indicated below.
 Description | Flag
 --- | :---:
 Render size of the output image | _-s_
-Path to lowpoly mesh            | _-l_
-Path to highpoly mesh           | _-h_
-Path to PLY mesh                | _-hp_
+Path to lowpoly mesh            | _-lp_
+Path to highpoly mesh           | _-hp_
+Path to PLY mesh                | _-ply_
 
 ### Optional flags
 Description | Flag
