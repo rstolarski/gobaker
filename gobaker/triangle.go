@@ -27,7 +27,6 @@ type Triangle struct {
 	Bar        Vector // Baricentric coordinates from intersection with a ray
 	Material   *Material
 	Distance   float64
-	hitFront   bool
 }
 
 // String implements Stringer interface.

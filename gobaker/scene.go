@@ -116,20 +116,13 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 	var lowpolyTriangle *Triangle
 
 	for i := 0; i < len(s.Lowpoly.Triangles); i++ {
-		if checkIfInside(
-			s.Lowpoly.Triangles[i].V0.vt.X,
-			s.Lowpoly.Triangles[i].V0.vt.Y,
-			s.Lowpoly.Triangles[i].V1.vt.X,
-			s.Lowpoly.Triangles[i].V1.vt.Y,
-			s.Lowpoly.Triangles[i].V2.vt.X,
-			s.Lowpoly.Triangles[i].V2.vt.Y,
-			uv.X,
-			uv.Y,
-		) {
+		b := s.Lowpoly.Triangles[i].Barycentric(uv.X, uv.Y)
+		if b.X > 0.0 && b.Y > 0.0 && b.Z > 0.0 {
 			lowpolyTriangle = &s.Lowpoly.Triangles[i] // If it intersects with a triangle, stop the loop
 			break
 		}
 	}
+
 	if lowpolyTriangle == nil {
 		return -1.0
 	}
@@ -167,7 +160,7 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 		}
 		if s.Highpoly.Triangles[i].Intersect(&rayBack) {
 			if rayBack.Distance <= rayBack.MaxRearDistance {
-				s.Highpoly.Triangles[i].hitFront = false
+				//s.Highpoly.Triangles[i].hitFront = false
 				s.Highpoly.Triangles[i].Distance = -s.Highpoly.Triangles[i].Distance
 				highpolyHit = append(highpolyHit, s.Highpoly.Triangles[i])
 			}
@@ -278,22 +271,22 @@ func (s *Scene) processPixel(x, y int, offset float64) float64 {
 
 // Checking if point with coordinates 'xp' and 'yp' is inside triangle
 // with coordinates x1-x3 and y1-y3
-func checkIfInside(x1, y1, x2, y2, x3, y3, xp, yp float64) bool {
-	x2 -= x1
-	y2 -= y1
-	x3 -= x1
-	y3 -= y1
-	xp -= x1
-	yp -= y1
-	d := x2*y3 - x3*y2
-	w1 := xp*(y2-y3) + yp*(x3-x2) + x2*y3 - x3*y2
-	w2 := xp*y3 - yp*x3
-	w3 := yp*x2 - xp*y2
-	if w1 >= 0.0 && w1 <= d && w2 >= 0.0 && w2 <= d && w3 >= 0.0 && w3 <= d {
-		return true
-	}
-	return false
-}
+// func checkIfInside(x1, y1, x2, y2, x3, y3, xp, yp float64) bool {
+// 	x2 -= x1
+// 	y2 -= y1
+// 	x3 -= x1
+// 	y3 -= y1
+// 	xp -= x1
+// 	yp -= y1
+// 	d := x2*y3 - x3*y2
+// 	w1 := xp*(y2-y3) + yp*(x3-x2) + x2*y3 - x3*y2
+// 	w2 := xp*y3 - yp*x3
+// 	w3 := yp*x2 - xp*y2
+// 	if w1 >= 0.0 && w1 <= d && w2 >= 0.0 && w2 <= d && w3 >= 0.0 && w3 <= d {
+// 		return true
+// 	}
+// 	return false
+// }
 
 func track(msg string) (string, time.Time) {
 	return msg, time.Now()
